@@ -29,6 +29,19 @@ public static class Settings {
         { "ctcsstx", 19},
         { "ctcssrx", 20},
         { "hasEchoLink", 21 },
-        { "echolinkID", 22 }
+        { "echolinkID", 22 },
+        { "c4fm", 29 },
+        { "dstar", 31 },
+        { "tetra", 34 }
     };
+}
+
+public enum RepeaterCSVColumns {
+    Band = 8,
+    Tx,
+    Rx,
+    Callsign,
+    Site,
+    isI2
+    
 }

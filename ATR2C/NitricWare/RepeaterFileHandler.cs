@@ -34,10 +34,8 @@ public class RepeaterFileHandler {
         if (values[16] != "active") {
             return false;
         }
-        
-        // TODO: some have DMR and C4FM on the same frequency...
-        // Only parse DMR and FM; exclude C4FM, D-Star, Tetra - but only if it's not an FM-only repeater
-        if ((values[29] == "1" || values[31] == "1" || values[34] == "1") && values[17] == "") {
+
+        if (values[Settings.RepeaterCSVColumns["isFM"]] != "1" && values[Settings.RepeaterCSVColumns["isDMR"]] != "1") {
             return false;
         }
         
@@ -51,7 +49,7 @@ public class RepeaterFileHandler {
 
     public Repeater GetRepeater(string csvLine) {
         string[] values = csvLine.Split(Settings.separator);
-
+        // TODO: ÖVSV repeater list lists Tx and Rx always from a repeater point of view; add a setting to let the user specify.
         Repeater repeater = new Repeater(
             Convert.ToString(values[Settings.RepeaterCSVColumns["band"]]),
             // The OEVSV CSV has Tx and Rx reversed (i.e. another point of view.)
@@ -84,11 +82,13 @@ public class RepeaterFileHandler {
             
             AnyToneAnalogContacts.Add(analogContact);
         }
+        
         return repeater;
     }
 
     public void CreateDigitalChannels() {
         foreach (var repeater in RepeaterList) {
+            Console.WriteLine(repeater.Callsign+repeater.NeedsZone);
             if (!repeater.NeedsZone) {
                 continue;
             }

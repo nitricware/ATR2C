@@ -30,16 +30,17 @@ public class CSVCreator {
             var channel = new AnyToneChannel();
             channel.ChannelName = repeater.Callsign + " " + repeater.Band;
             // TODO: caution! if 145 -> 145000000, make 145.0 -> 145.00000
-            channel.ReceiveFrequency = repeater.Rx.ToString().Replace(",",".").PadRight(9,'0');
-            channel.TransmitFrequency = repeater.Tx.ToString().Replace(",",".").PadRight(9,'0');
+            channel.ReceiveFrequency = repeater.Rx.ToString("0.00000").Replace(",",".");
+            channel.TransmitFrequency = repeater.Tx.ToString("0.00000").Replace(",",".");
             channel.ChannelType = "A-Analog";
             channel.Contact = "";
             channel.ContactTG = "";
             channel.ColorCode = "";
             channel.Slot = "";
             channel.BandWidth = "12.5K";
-            channel.CTCSSDecode = repeater.CTSSRX == 0 ? "Off" : repeater.CTSSRX.ToString().Replace(",",".").PadRight(9,'0');
-            channel.CTCSSEncode = repeater.CTSSTX == 0 ? "Off" : repeater.CTSSTX.ToString().Replace(",",".").PadRight(9,'0');
+            // TODO: ÖVSV repeater list lists Tx and Rx always from a repeater point of view; add a setting to let the user specify.
+            channel.CTCSSDecode = repeater.CTSSTX == 0 ? "Off" : repeater.CTSSTX.ToString("0.0").Replace(",",".");
+            channel.CTCSSEncode = repeater.CTSSRX == 0 ? "Off" : repeater.CTSSRX.ToString("0.0").Replace(",",".");
             channel.SquelchMode = (repeater.CTSSRX != 0 || repeater.CTSSTX != 0) ? "CTCSS/DCS" : "Carrier";
             channel.ColorCode = "0";
             channel.Slot = "1";

@@ -31,6 +31,7 @@ public class Repeater {
         double ctssTx = 0.0,
         double ctssRx = 0.0
         ) {
+        // TODO: ÖVSV repeater list lists Tx and Rx always from a repeater point of view; add a setting to let the user specify.
         this.Band = band;
         this.Tx = tx;
         this.Rx = rx;
