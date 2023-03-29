@@ -12,7 +12,7 @@ public class TalkGroupFileHandler {
         TalkGroupList = values;
     }
 
-    public TalkGroup GetTalkGroup(string line) {
+    private TalkGroup GetTalkGroup(string line) {
         string[] values = line.Split(Settings.separator);
         TalkGroup talkgroup = new TalkGroup(
             values[Settings.TalkGroupCSVColumns["network"]],

@@ -1,10 +1,37 @@
 ﻿using ATCSVCreator.NitricWare;
 
-var repeater = new RepeaterFileHandler();
+OEVSVRepeaterFileHandler oevsvRepeaterFileHandler = new OEVSVRepeaterFileHandler();
+TalkGroupFileHandler talkGroupFileHandler = new TalkGroupFileHandler();
+
+// Load the talkgroups from file
+// Transform the loaded talkgroups to a list for the CSVCreator
+// Only add marked talkgroups (either AddToList or CreateChannel)
+talkGroupFileHandler.LoadTalkgroupCSV();
+
+List<AnyToneTalkgroup> anyToneTalkgroups = new();
+foreach (var talkGroup in talkGroupFileHandler.TalkGroupList.Where(tg => tg.AddToList || tg.CreateChannel)) {
+    anyToneTalkgroups.Add(talkGroup.ToAnyToneTalkgroup());
+}
+
+oevsvRepeaterFileHandler.TalkGroups = talkGroupFileHandler.TalkGroupList;
+oevsvRepeaterFileHandler.LoadRepeaterCSV();
+
+// Arm the CSVCreator with all created objects
+CSVCreator csvCreator = new CSVCreator {
+    Zones = oevsvRepeaterFileHandler.Zones,
+    Channels = oevsvRepeaterFileHandler.Channels,
+    Talkgroups = anyToneTalkgroups,
+    AnalogAddressBook = oevsvRepeaterFileHandler.AnalogContacts
+};
+
+csvCreator.CreateAllFiles();
+
+/*var repeater = new OEVSVRepeaterFileHandler();
 var talkgroups = new TalkGroupFileHandler();
+var talkGroupList = new List<AnyToneTalkgroup>();*/
 
-var talkGroupList = new List<AnyToneTalkgroup>();
 
+/*
 // Load latest repeaters from CSV
 repeater.LoadRepeaterCSV();
 
@@ -38,7 +65,7 @@ foreach (var rep in repeater.RepeaterList) {
 }
 
 Console.WriteLine("There are " + (repeater.RepeaterList.Count - repCount) + " more analog FM repeaters.");*/
-
+/*
 var CsvCreator = new CSVCreator(repeater.RepeaterList);
 CsvCreator.AnalogAddressBook = repeater.AnyToneAnalogContacts;
 CsvCreator.CreateAnalogAddressBookFile();
@@ -54,3 +81,4 @@ CsvCreator.Talkgroups = talkGroupList;
 CsvCreator.CreateTalkgroupsFile();
 
 CsvCreator.MergeDefaults();
+*/

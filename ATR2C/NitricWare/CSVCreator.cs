@@ -10,7 +10,7 @@ public class CSVCreator {
     public List<AnyToneTalkgroup> Talkgroups;
     public List<AnyToneAnalogContact> AnalogAddressBook;
 
-    public CSVCreator(
+    /*public CSVCreator(
         List<Repeater> repeater
         ) {
         Repeater = repeater;
@@ -18,7 +18,7 @@ public class CSVCreator {
         Channels = new List<AnyToneChannel>();
 
         Directory.CreateDirectory("export");
-    }
+    }*/
 
     public void CreateAnalogZones() {
         foreach (var repeater in Repeater) {
@@ -29,7 +29,6 @@ public class CSVCreator {
             // Create the analog channel
             var channel = new AnyToneChannel();
             channel.ChannelName = repeater.Callsign + " " + repeater.Band;
-            // TODO: caution! if 145 -> 145000000, make 145.0 -> 145.00000
             channel.ReceiveFrequency = repeater.Rx.ToString("0.00000").Replace(",",".");
             channel.TransmitFrequency = repeater.Tx.ToString("0.00000").Replace(",",".");
             channel.ChannelType = "A-Analog";
@@ -122,6 +121,14 @@ public class CSVCreator {
         }
     }
 
+    public void CreateAllFiles() {
+        CreateZonesFile();
+        CreateChannelsFile();
+        CreateAnalogAddressBookFile();
+        CreateTalkgroupsFile();
+        
+        MergeDefaults();
+    }
     public void CreateZonesFile() {
         using (var writer = new StreamWriter("./export/Zone.csv"))
         using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
