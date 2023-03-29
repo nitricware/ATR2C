@@ -9,7 +9,8 @@ public class CSVCreator {
     public List<AnyToneChannel> Channels;
     public List<AnyToneTalkgroup> Talkgroups;
     public List<AnyToneAnalogContact> AnalogAddressBook;
-
+    public List<AnyToneScanList> ScanLists;
+    
     /*public CSVCreator(
         List<Repeater> repeater
         ) {
@@ -126,6 +127,7 @@ public class CSVCreator {
         CreateChannelsFile();
         CreateAnalogAddressBookFile();
         CreateTalkgroupsFile();
+        CreateScanListFile();
         
         MergeDefaults();
     }
@@ -161,10 +163,19 @@ public class CSVCreator {
         }
     }
 
+    public void CreateScanListFile() {
+        using (var writer = new StreamWriter("./export/ScanList.csv"))
+        using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
+        {
+            csv.WriteRecords(ScanLists);
+        }
+    }
+
     public void MergeDefaults() {
         MergeFile("Channel.csv");
         MergeFile("Zone.csv");
         MergeFile("TalkGroups.csv");
+        MergeFile("ScanList.csv");
     }
 
     private void MergeFile(string path) {

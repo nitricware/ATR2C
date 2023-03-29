@@ -9,6 +9,7 @@ public class TalkGroup {
     public bool CreateChannel;
     public bool AddToList;
     public int TimeSlot;
+    public bool AddToScanList;
 
     public TalkGroup(
         string network,
@@ -18,7 +19,8 @@ public class TalkGroup {
         string callAlert,
         bool createChannel,
         bool addToList,
-        int timeSlot
+        int timeSlot,
+        bool addToScanList
     ) {
         this.DMRid = dmrid;
         this.Name = name;
@@ -26,6 +28,7 @@ public class TalkGroup {
         this.CreateChannel = createChannel;
         this.AddToList = addToList;
         this.TimeSlot = timeSlot;
+        AddToScanList = addToScanList;
         
         // parse network
 

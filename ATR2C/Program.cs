@@ -21,7 +21,8 @@ CSVCreator csvCreator = new CSVCreator {
     Zones = oevsvRepeaterFileHandler.Zones,
     Channels = oevsvRepeaterFileHandler.Channels,
     Talkgroups = anyToneTalkgroups,
-    AnalogAddressBook = oevsvRepeaterFileHandler.AnalogContacts
+    AnalogAddressBook = oevsvRepeaterFileHandler.AnalogContacts,
+    ScanLists = oevsvRepeaterFileHandler.ScanLists
 };
 
 csvCreator.CreateAllFiles();

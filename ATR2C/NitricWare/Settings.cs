@@ -4,6 +4,8 @@ public static class Settings {
     public static string separator = ",";
     public static string HamCallSign = "OE3FKG";
     public static string InputFile = "./input/repeater.csv";
+    public static bool CreateDigitalScanLists = true;
+    public static bool CreateAnalogScanLists = true;
 
     public static Dictionary<string, int> TalkGroupCSVColumns = new() {
         {"dmrid", 1},
@@ -13,7 +15,8 @@ public static class Settings {
         {"createchannel", 5},
         {"addtolist", 6},
         {"network", 7},
-        {"timeslot", 8}
+        {"timeslot", 8},
+        {"addtoscanlist", 9}
     };
 
     public static Dictionary<string, int> RepeaterCSVColumns = new() {

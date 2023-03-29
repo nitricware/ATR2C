@@ -22,7 +22,8 @@ public class TalkGroupFileHandler {
             values[Settings.TalkGroupCSVColumns["alerttype"]],
             Convert.ToBoolean(values[Settings.TalkGroupCSVColumns["createchannel"]]),
             Convert.ToBoolean(values[Settings.TalkGroupCSVColumns["addtolist"]]),
-            Convert.ToInt32(values[Settings.TalkGroupCSVColumns["timeslot"]])
+            Convert.ToInt32(values[Settings.TalkGroupCSVColumns["timeslot"]]),
+            Convert.ToBoolean(values[Settings.TalkGroupCSVColumns["addtoscanlist"]])
         );
         return talkgroup;
     }

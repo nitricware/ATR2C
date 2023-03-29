@@ -9,6 +9,7 @@ public class OEVSVRepeaterFileHandler {
     public List<AnyToneAnalogContact> AnalogContacts = new();
     public List<AnyToneZone> Zones = new();
     public List<AnyToneChannel> Channels = new();
+    public List<AnyToneScanList> ScanLists = new();
 
     public void LoadRepeaterCSV() {
         /*List<Repeater> values = File.ReadAllLines(Settings.InputFile)
@@ -68,7 +69,6 @@ public class OEVSVRepeaterFileHandler {
         string channelCallsign = Convert.ToString(values[Settings.RepeaterCSVColumns["callsign"]]);
         string channelBand = Convert.ToString(values[Settings.RepeaterCSVColumns["band"]]);
         string repeaterLocation = values[(int)OEVSVRepeaterCSVColumns.Callsign].Substring(0, 3);
-        
 
         string channelTx = Convert.ToDouble(
             values[Settings.RepeaterCSVColumns["tx"]],
@@ -149,6 +149,29 @@ public class OEVSVRepeaterFileHandler {
 
                 AnalogContacts.Add(analogContact);
             }
+            
+            // Create a Scan List if necessary and add the repeater to it
+
+            if (Settings.CreateAnalogScanLists) {
+                string scanListName = repeaterLocation + " Analog";
+                AnyToneScanList? scanList = ScanLists.FirstOrDefault(x => x.ScanListName == scanListName);
+                if (scanList == null) {
+                    scanList = new AnyToneScanList {
+                        ScanListName = scanListName,
+                        ScanChannelMember = channelFM.ChannelName,
+                        ScanChannelMemberTXFrequency = channelFM.TransmitFrequency,
+                        ScanChannelMemberRXFrequency = channelFM.ReceiveFrequency
+                    };
+                    
+                    ScanLists.Add(scanList);
+                } else {
+                    scanList.ScanChannelMember += $"|{channelFM.ChannelName}";
+                    scanList.ScanChannelMemberTXFrequency += $"|{channelFM.TransmitFrequency}";
+                    scanList.ScanChannelMemberRXFrequency += $"|{channelFM.ReceiveFrequency}";
+                }
+
+                channelFM.ScanList = scanList.ScanListName;
+            }
         }
 
         if (values[(int)OEVSVRepeaterCSVColumns.DMR] == "1") {
@@ -192,6 +215,30 @@ public class OEVSVRepeaterFileHandler {
                     Slot = talkgroup.TimeSlot.ToString()
                 };
                 
+                // Create a scanlist if needed and add this repeater to if marked
+                
+                if (Settings.CreateAnalogScanLists && talkgroup.AddToScanList) {
+                    string scanListName = repeaterLocation + " Digital";
+                    AnyToneScanList? scanList = ScanLists.FirstOrDefault(x => x.ScanListName == scanListName);
+                    if (scanList == null) {
+                        scanList = new AnyToneScanList {
+                            ScanListName = scanListName,
+                            ScanChannelMember = digitalChannel.ChannelName,
+                            ScanChannelMemberTXFrequency = digitalChannel.TransmitFrequency,
+                            ScanChannelMemberRXFrequency = digitalChannel.ReceiveFrequency
+                        };
+                        
+                        ScanLists.Add(scanList);
+                    } else {
+                        scanList.ScanChannelMember += $"|{digitalChannel.ChannelName}";
+                        scanList.ScanChannelMemberTXFrequency += $"|{digitalChannel.TransmitFrequency}";
+                        scanList.ScanChannelMemberRXFrequency += $"|{digitalChannel.ReceiveFrequency}";
+                        
+                    }
+
+                    digitalChannel.ScanList = scanList.ScanListName;
+                }
+                
                 digitalChannels.Add(digitalChannel);
             }
             
@@ -226,7 +273,7 @@ public class OEVSVRepeaterFileHandler {
         // Once it's done, sort the Zones list by name
         Zones = Zones.OrderBy(z => z.ChannelName).ToList();
     }
-
+    
     public Repeater GetRepeater(string csvLine) {
         string[] values = csvLine.Split(Settings.separator);
         // TODO: ÖVSV repeater list lists Tx and Rx always from a repeater point of view; add a setting to let the user specify.
