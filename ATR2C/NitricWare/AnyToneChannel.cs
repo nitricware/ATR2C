@@ -1,3 +1,5 @@
+using CsvHelper.Configuration;
+
 namespace ATCSVCreator.NitricWare; 
 
 public class AnyToneChannel {
@@ -54,4 +56,64 @@ public class AnyToneChannel {
     public string AnaAPRSMute { get; set; } = "0";
     public string SendTalkerAlias { get; set; } = "0";
     public string AnaAPRSTXPath { get; set; } = "0";
+}
+
+public sealed class AnyToneChannelClassMap : ClassMap<AnyToneChannel>
+{
+    public AnyToneChannelClassMap()
+    {
+        Map(m => m.ID).Name("No.");
+        Map(m => m.ChannelName).Name("Channel Name");
+        Map(m => m.ReceiveFrequency).Name("Receive Frequency");
+        Map(m => m.TransmitFrequency).Name("Transmit Frequency");
+        Map(m => m.ChannelType).Name("Channel Type");
+        Map(m => m.TransmitPower).Name("Transmit Power");
+        Map(m => m.BandWidth).Name("Band Width");
+        Map(m => m.CTCSSDecode).Name("CTCSS/DCS Decode");
+        Map(m => m.CTCSSEncode).Name("CTCSS/DCS Encode");
+        Map(m => m.Contact);
+        Map(m => m.ContactCallType).Name("Contact Call Type");
+        Map(m => m.ContactTG).Name("Contact TG/DMR ID");
+        Map(m => m.RadioID).Name("Radio ID");
+        Map(m => m.BusyLock).Name("Busy Lock/TX Permit");
+        Map(m => m.SquelchMode).Name("Squelch Mode");
+        Map(m => m.OptionalSignal).Name("Optional Setting");
+        Map(m => m.DTMFID).Name("DTMF ID");
+        Map(m => m.ToneID2).Name("2Tone ID");
+        Map(m => m.ToneID5).Name("5Tone ID");
+        Map(m => m.PTTID).Name("PTT ID");
+        Map(m => m.ColorCode).Name("Color Code");
+        Map(m => m.Slot);
+        Map(m => m.ScanList).Name("Scan List");
+        Map(m => m.ReceiveGroupList).Name("Receive Group List");
+        Map(m => m.PTTProhibit).Name("PTT Prohibit");
+        Map(m => m.Reverse);
+        Map(m => m.SimplexTDMA).Name("Simplex TDMA");
+        Map(m => m.SlotSuit).Name("Slot Suit");
+        Map(m => m.AESDigitalEncryption).Name("AES Digital Encryption");
+        Map(m => m.DigitalEncryption).Name("Digital Encryption");
+        Map(m => m.CallConfirmation).Name("Call Confirmation");
+        Map(m => m.TalkAround).Name("Talk Around(Simplex)");
+        Map(m => m.WorkAlone).Name("Work Alone");
+        Map(m => m.CustomCTCSS).Name("Custom CTCSS");
+        Map(m => m.ToneDecode2).Name("2TONE Decode");
+        Map(m => m.Ranging);
+        Map(m => m.ThroughMode).Name("Through Mode");
+        Map(m => m.APRSRX).Name("APRS RX");
+        Map(m => m.AnalogAPRSPTTMode).Name("Analog APRS PTT Mode");
+        Map(m => m.DigitalAPRSPTTMode).Name("Digital APRS PTT Mode");
+        Map(m => m.APRSReportType).Name("APRS Report Type");
+        Map(m => m.DigitalAPRSReportChannel).Name("Digital APRS Report Channel");
+        Map(m => m.CorrectFrequency).Name("Correct Frequency[Hz]");
+        Map(m => m.SMSConfirmation).Name("SMS Confirmation");
+        Map(m => m.ExcludeChannelFromRoaming).Name("Exclude channel from roaming");
+        Map(m => m.DMRMode).Name("DMR MODE");
+        Map(m => m.DataACKDisable).Name("DataACK Disable");
+        Map(m => m.R5ToneBot).Name("R5toneBot");
+        Map(m => m.R5ToneEot).Name("R5toneEot");
+        Map(m => m.AutoScan).Name("Auto Scan");
+        Map(m => m.AnaAPRSMute).Name("Ana Aprs Mute");
+        Map(m => m.SendTalkerAlias).Name("Send Talker Alias");
+        Map(m => m.AnaAPRSTXPath).Name("AnaAprsTxPath");
+    }
 }

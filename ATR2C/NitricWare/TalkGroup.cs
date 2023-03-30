@@ -51,8 +51,8 @@ public class TalkGroup {
         }
     }
 
-    public AnyToneTalkgroup ToAnyToneTalkgroup() {
-        AnyToneTalkgroup tg = new AnyToneTalkgroup();
+    public AnyToneTalkGroup ToAnyToneTalkgroup() {
+        AnyToneTalkGroup tg = new AnyToneTalkGroup();
         tg.RadioID = DMRid.ToString();
         tg.Name = Name;
 
