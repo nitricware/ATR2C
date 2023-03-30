@@ -14,6 +14,8 @@ The program creates
    1. n channels with the Tx and Rx frequencies of the channel with a predefined TG (n = number of talkgroups defined for the network of the repeater, defined in `/input/talkgroups.csv`)
 2. a *zone* for every region (OE1 - OE9) containing
    1. all analog repeaters of the region.
+3. An Analog Address Book containing the EchoLink DTMF Codes for every repeater in the input file
+4. A digital and analog Scanlist for every location prefix (i.e. "OE3", "HB9") containing all analog repeaters and selected talkgroups of a the region's digital repeaters
 
 ### Input Files
 
@@ -65,3 +67,4 @@ must have a header row.
 ## Known Issues
 
 1. Some Repeater have different settings on repeater.oevsv.at and dmraustria.at
+2. Scan List improvement: with promiscious mode on, the digital scan lists could be improved
