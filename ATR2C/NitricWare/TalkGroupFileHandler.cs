@@ -1,11 +1,10 @@
 namespace ATCSVCreator.NitricWare; 
 
 public class TalkGroupFileHandler {
-    private readonly string _pathToTalkGroupCsv = "./input/talkgroups.csv";
     public List<TalkGroup> TalkGroupList;
 
-    public void LoadTalkgroupCSV() {
-        List<TalkGroup> values = File.ReadAllLines(_pathToTalkGroupCsv)
+    public TalkGroupFileHandler(string path) {
+        List<TalkGroup> values = File.ReadAllLines(path)
             .Skip(1)
             .Select(v => GetTalkGroup(v))
             .ToList();

@@ -10,8 +10,9 @@ public class OEVSVRepeaterFileHandler {
     public List<AnyToneChannel> Channels = new();
     public List<AnyToneScanList> ScanLists = new();
 
-    public void LoadRepeaterCSV() {
-        foreach (string line in File.ReadAllLines(Settings.InputFile)
+    public OEVSVRepeaterFileHandler(string path, List<TalkGroup> talkgroups) {
+        TalkGroups = talkgroups;
+        foreach (string line in File.ReadAllLines(path)
                      .Skip(1)
                      .Where(SkipLine)) {
             string[] columns = line.Split(Settings.separator);
