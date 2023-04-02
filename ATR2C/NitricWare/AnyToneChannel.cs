@@ -15,7 +15,7 @@ public class AnyToneChannel {
     public string Contact { get; set; }
     public string ContactCallType { get; set; } = "Group Call";
     public string ContactTG { get; set; }
-    public string RadioID { get; set; } = Settings.HamCallSign;
+    public string RadioID { get; set; }
     public string BusyLock { get; set; } = "Always";
     public string SquelchMode { get; set; } = "Carrier";
     public string OptionalSignal { get; set; } = "Off";

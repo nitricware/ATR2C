@@ -10,8 +10,11 @@ public class OEVSVRepeaterFileHandler {
     public List<AnyToneChannel> Channels = new();
     public List<AnyToneScanList> ScanLists = new();
 
-    public OEVSVRepeaterFileHandler(string path, List<TalkGroup> talkgroups) {
+    public string HamCallsign;
+
+    public OEVSVRepeaterFileHandler(string path, List<TalkGroup> talkgroups, string hamCallsign) {
         TalkGroups = talkgroups;
+        HamCallsign = hamCallsign;
         foreach (string line in File.ReadAllLines(path)
                      .Skip(1)
                      .Where(SkipLine)) {
@@ -92,7 +95,8 @@ public class OEVSVRepeaterFileHandler {
                 APRSReportType = "Analog",
                 CustomCTCSS = "251.1",
                 BusyLock = "Off",
-                ColorCode = "1"
+                ColorCode = "1",
+                RadioID = HamCallsign
             };
             
             Channels.Add(channelFM);
@@ -201,7 +205,8 @@ public class OEVSVRepeaterFileHandler {
                     Contact = talkgroup.Name,
                     ContactTG = talkgroup.DMRid.ToString(),
                     ColorCode = values[(int)OEVSVRepeaterCSVColumns.Colorcode],
-                    Slot = talkgroup.TimeSlot.ToString()
+                    Slot = talkgroup.TimeSlot.ToString(),
+                    RadioID = HamCallsign
                 };
                 
                 // Create a scanlist if needed and add this repeater to if marked
@@ -263,5 +268,3 @@ public class OEVSVRepeaterFileHandler {
         Zones = Zones.OrderBy(z => z.ZoneName).ToList();
     }
 }
-// 0    1  2      3   4               5            6            7        8              9         10    11  12       13    14          15            16     17 18        19       20       21       22          23         24  25 26    27           28                 29   30          31    32         33         34    35         36              37      38         39   40        41       42        43            44           45         46      47   48           49  50  51 52 53
-// band;ch;ch_new;uid;type_of_station;frequency_tx;frequency_rx;callsign;antenna_heigth;site_name;sysop;url;hardware;mmdvm;solar_power;battery_power;status;fm;fm_wakeup;ctcss_tx;ctcss_rx;echolink;echolink_id;digital_id;dmr;cc;ipsc2;brandmeister;network_registered;c4fm;c4fm_groups;dstar;dstar_rpt1;dstar_rpt2;tetra;other_mode;other_mode_name;comment;created_at;city;longitude;latitude;sea_level;locator_short;locator_long;geo_prefix;bev_gid;geom;name_address;gkz;bkz;kg;pg;bl

@@ -12,16 +12,40 @@ public class MainWindow : Window {
     private readonly string _defaultsDirPath = Path.Combine(Directory.GetCurrentDirectory(),"defaults");
     public TextField exportDirPathTextField;
     private readonly string _exportDirPath = Path.Combine(Directory.GetCurrentDirectory(),"export");
+    public TextField hamCallsignTextField;
+    private readonly string _hamCallsign = Path.Combine(Settings.HamCallSign);
     
     public MainWindow() {
         Title = "ATR2C (CTRL + Q to quit)";
+        
+        Label hamCallsignLabel = new() {
+            Text = "Callsign"
+        };
+
+        hamCallsignTextField = new TextField(_hamCallsign) {
+            // Position text field adjacent to the label
+            X = Pos.Right (hamCallsignLabel) + 15,
+            // Fill remaining horizontal space
+            Width = Dim.Fill (15)
+        };
+
+        Label hamCallsignExplanationLabel = new() {
+            Text = "Must match a Radio ID in CPS.",
+            X = Pos.Left(hamCallsignLabel),
+            Y = Pos.Bottom(hamCallsignTextField),
+            Width = Dim.Fill()
+        };
+        
         Label repeaterPathLabel = new() {
-            Text = "Path to repeater.csv"
+            Text = "Path to repeater.csv",
+            X = Pos.Left(hamCallsignLabel),
+            Y = Pos.Bottom(hamCallsignExplanationLabel) + 1
         };
 
         repeaterPathTextField = new TextField(_repeaterPath) {
             // Position text field adjacent to the label
             X = Pos.Right (repeaterPathLabel) + 3,
+            Y = Pos.Bottom(hamCallsignExplanationLabel) +1,
             // Fill remaining horizontal space
             Width = Dim.Fill (15)
         };
@@ -57,7 +81,8 @@ public class MainWindow : Window {
         Label defaultsDirPathExplanationLabel = new() {
             Text = "Select the directory in which the default .csv files\nthat are merged with the final product reside.\nCan contain none, any or all defaults files.",
             X = Pos.Left(defaultsDirPathLabel),
-            Y = Pos.Bottom(defaultsDirPathTextField)+1
+            Y = Pos.Bottom(defaultsDirPathTextField),
+            Width = Dim.Fill()
         };
         
         Label exportDirPathLabel = new() {
@@ -91,6 +116,9 @@ public class MainWindow : Window {
         btnGenerate.Clicked += generateFiles;
 
         Add(
+            hamCallsignLabel,
+            hamCallsignTextField,
+            hamCallsignExplanationLabel,
             repeaterPathTextField,
             repeaterPathLabel, 
             btnSelectRepeaterPath,  
@@ -155,7 +183,11 @@ public class MainWindow : Window {
         
         // TODO error handling if empty talkgroup list
         
-        OEVSVRepeaterFileHandler oevsvRepeaterFileHandler = new OEVSVRepeaterFileHandler(repeaterPathTextField.Text.ToString(), talkGroupFileHandler.TalkGroupList);
+        OEVSVRepeaterFileHandler oevsvRepeaterFileHandler = new OEVSVRepeaterFileHandler(
+            repeaterPathTextField.Text.ToString(), 
+            talkGroupFileHandler.TalkGroupList,
+            hamCallsignTextField.Text.ToString()
+            );
 
         List<AnyToneTalkGroup> anyToneTalkgroups = new();
         foreach (var talkGroup in talkGroupFileHandler.TalkGroupList.Where(tg => tg.AddToList || tg.CreateChannel)) {

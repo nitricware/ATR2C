@@ -2,8 +2,8 @@ namespace ATCSVCreator.NitricWare;
 
 public static class Settings {
     public static string separator = ",";
-    public static string HamCallSign = "OE3FKG";
-    public static string InputFile = "./input/repeater.csv";
+    public static string HamCallSign = "OE3ZZZ";
+    // TODO: implement functionality 
     public static bool CreateDigitalScanLists = true;
     public static bool CreateAnalogScanLists = true;
 
