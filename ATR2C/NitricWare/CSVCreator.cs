@@ -10,6 +10,9 @@ public class CSVCreator {
     public List<AnyToneTalkGroup> Talkgroups;
     public List<AnyToneAnalogContact> AnalogAddressBook;
     public List<AnyToneScanList> ScanLists;
+
+    public string DefaultsDir;
+    public string ExportDir;
     
     private CsvConfiguration _config = new(CultureInfo.InvariantCulture)
     {
@@ -26,7 +29,7 @@ public class CSVCreator {
         MergeDefaults();
     }
     public void CreateZonesFile() {
-        using (var writer = new StreamWriter("./export/Zone.csv"))
+        using (var writer = new StreamWriter(Path.Combine(ExportDir,"Zone.csv")))
         using (var csv = new CsvWriter(writer, _config)) {
             csv.Context.RegisterClassMap<AnyToneZoneClassMap>();
             csv.WriteRecords(Zones);
@@ -34,7 +37,7 @@ public class CSVCreator {
     }
 
     public void CreateChannelsFile() {
-        using (var writer = new StreamWriter("./export/Channel.csv"))
+        using (var writer = new StreamWriter(Path.Combine(ExportDir,"Channel.csv")))
         using (var csv = new CsvWriter(writer, _config)) {
             csv.Context.RegisterClassMap<AnyToneChannelClassMap>();
             csv.WriteRecords(Channels);
@@ -42,7 +45,7 @@ public class CSVCreator {
     }
 
     public void CreateTalkgroupsFile() {
-        using (var writer = new StreamWriter("./export/TalkGroups.csv"))
+        using (var writer = new StreamWriter(Path.Combine(ExportDir,"TalkGroups.csv")))
         using (var csv = new CsvWriter(writer, _config)) {
             csv.Context.RegisterClassMap<AnyToneTalkGroupClassMap>();
             csv.WriteRecords(Talkgroups);
@@ -50,7 +53,7 @@ public class CSVCreator {
     }
     
     public void CreateAnalogAddressBookFile() {
-        using (var writer = new StreamWriter("./export/AnalogAddressBook.csv"))
+        using (var writer = new StreamWriter(Path.Combine(ExportDir,"AnalogAddressBook.csv")))
         using (var csv = new CsvWriter(writer, _config)) {
             csv.Context.RegisterClassMap<AnyToneAnalogContactClassMap>();
             csv.WriteRecords(AnalogAddressBook);
@@ -58,7 +61,7 @@ public class CSVCreator {
     }
 
     public void CreateScanListFile() {
-        using (var writer = new StreamWriter("./export/ScanList.csv"))
+        using (var writer = new StreamWriter(Path.Combine(ExportDir,"ScanList.csv")))
         using (var csv = new CsvWriter(writer, _config)) {
             csv.Context.RegisterClassMap<AnyToneScanListClassMap>();
             csv.WriteRecords(ScanLists);
@@ -72,13 +75,13 @@ public class CSVCreator {
         MergeFile("ScanList.csv");
     }
 
-    private void MergeFile(string path) {
-        if (!File.Exists("./defaults/" + path)) {
+    private void MergeFile(string file) {
+        if (!File.Exists(Path.Combine(DefaultsDir,file))) {
             return;
         }
         
-        var generatedFile = File.Open("./export/"+path, FileMode.Append ,FileAccess.Write);
-        var defaultsFile = File.OpenRead("./defaults/"+path);
+        var generatedFile = File.Open(Path.Combine(ExportDir,file), FileMode.Append ,FileAccess.Write);
+        var defaultsFile = File.OpenRead(Path.Combine(DefaultsDir,file));
         
         defaultsFile.CopyTo(generatedFile);
         generatedFile.Close();
