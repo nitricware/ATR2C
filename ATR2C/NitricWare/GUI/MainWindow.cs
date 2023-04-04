@@ -1,18 +1,20 @@
-using System.Numerics;
+using ATCSVCreator.NitricWare.AnyTone;
+using ATCSVCreator.NitricWare.Oevsv;
+using ATCSVCreator.NitricWare.TalkGroups;
 
 namespace ATCSVCreator.NitricWare.GUI; 
 using Terminal.Gui;
 
 public class MainWindow : Window {
-    public TextField repeaterPathTextField;
+    private readonly TextField _repeaterPathTextField;
     private readonly string _repeaterPath = Path.Combine(Directory.GetCurrentDirectory(),"input","repeater.csv");
-    public TextField talkgroupPathTextField;
-    private readonly string _talkgroupPath = Path.Combine(Directory.GetCurrentDirectory(),"input","talkgroups.csv");
-    public TextField defaultsDirPathTextField;
+    private readonly TextField _talkGroupPathTextField;
+    private readonly string _talkGroupPath = Path.Combine(Directory.GetCurrentDirectory(),"input","talkgroups.csv");
+    private readonly TextField _defaultsDirPathTextField;
     private readonly string _defaultsDirPath = Path.Combine(Directory.GetCurrentDirectory(),"defaults");
-    public TextField exportDirPathTextField;
+    private readonly TextField _exportDirPathTextField;
     private readonly string _exportDirPath = Path.Combine(Directory.GetCurrentDirectory(),"export");
-    public TextField hamCallsignTextField;
+    private readonly TextField _hamCallsignTextField;
     private readonly string _hamCallsign = Path.Combine(Settings.HamCallSign);
     
     public MainWindow() {
@@ -22,7 +24,7 @@ public class MainWindow : Window {
             Text = "Callsign"
         };
 
-        hamCallsignTextField = new TextField(_hamCallsign) {
+        _hamCallsignTextField = new TextField(_hamCallsign) {
             // Position text field adjacent to the label
             X = Pos.Right (hamCallsignLabel) + 15,
             // Fill remaining horizontal space
@@ -32,7 +34,7 @@ public class MainWindow : Window {
         Label hamCallsignExplanationLabel = new() {
             Text = "Must match a Radio ID in CPS.",
             X = Pos.Left(hamCallsignLabel),
-            Y = Pos.Bottom(hamCallsignTextField),
+            Y = Pos.Bottom(_hamCallsignTextField),
             Width = Dim.Fill()
         };
         
@@ -42,7 +44,7 @@ public class MainWindow : Window {
             Y = Pos.Bottom(hamCallsignExplanationLabel) + 1
         };
 
-        repeaterPathTextField = new TextField(_repeaterPath) {
+        _repeaterPathTextField = new TextField(_repeaterPath) {
             // Position text field adjacent to the label
             X = Pos.Right (repeaterPathLabel) + 3,
             Y = Pos.Bottom(hamCallsignExplanationLabel) +1,
@@ -53,13 +55,13 @@ public class MainWindow : Window {
         Label talkgroupPathLabel = new() {
             Text = "Path to talkgroups.csv",
             X = Pos.Left (repeaterPathLabel),
-            Y = Pos.Bottom (repeaterPathTextField) +1
+            Y = Pos.Bottom (_repeaterPathTextField) +1
         };
 
-        talkgroupPathTextField = new TextField(_talkgroupPath) {
+        _talkGroupPathTextField = new TextField(_talkGroupPath) {
             // Position text field adjacent to the label
-            X = Pos.Left (repeaterPathTextField),
-            Y = Pos.Bottom (repeaterPathTextField) + 1,
+            X = Pos.Left (_repeaterPathTextField),
+            Y = Pos.Bottom (_repeaterPathTextField) + 1,
             // Fill remaining horizontal space
             Width = Dim.Fill(15)
         };
@@ -67,13 +69,13 @@ public class MainWindow : Window {
         Label defaultsDirPathLabel = new() {
             Text = "Path to /defaults/",
             X = Pos.Left(talkgroupPathLabel),
-            Y = Pos.Bottom(talkgroupPathTextField) +1
+            Y = Pos.Bottom(_talkGroupPathTextField) +1
         };
         
-        defaultsDirPathTextField = new TextField(_defaultsDirPath) {
+        _defaultsDirPathTextField = new TextField(_defaultsDirPath) {
             // Position text field adjacent to the label
-            X = Pos.Left (talkgroupPathTextField),
-            Y = Pos.Top (talkgroupPathTextField) + 2,
+            X = Pos.Left (_talkGroupPathTextField),
+            Y = Pos.Top (_talkGroupPathTextField) + 2,
             // Fill remaining horizontal space
             Width = Dim.Fill(15)
         };
@@ -81,7 +83,7 @@ public class MainWindow : Window {
         Label defaultsDirPathExplanationLabel = new() {
             Text = "Select the directory in which the default .csv files\nthat are merged with the final product reside.\nCan contain none, any or all defaults files.",
             X = Pos.Left(defaultsDirPathLabel),
-            Y = Pos.Bottom(defaultsDirPathTextField),
+            Y = Pos.Bottom(_defaultsDirPathTextField),
             Width = Dim.Fill()
         };
         
@@ -91,18 +93,18 @@ public class MainWindow : Window {
             Y = Pos.Bottom(defaultsDirPathExplanationLabel) +1
         };
         
-        exportDirPathTextField = new TextField(_exportDirPath) {
+        _exportDirPathTextField = new TextField(_exportDirPath) {
             // Position text field adjacent to the label
-            X = Pos.Left (talkgroupPathTextField),
+            X = Pos.Left (_talkGroupPathTextField),
             Y = Pos.Bottom (defaultsDirPathExplanationLabel) + 1,
             // Fill remaining horizontal space
             Width = Dim.Fill(15)
         };
 
-        Button btnSelectRepeaterPath = GenerateFilePickerButton(repeaterPathTextField, false);
-        Button btnSelectTalkgroupsPath = GenerateFilePickerButton(talkgroupPathTextField, false);
-        Button btnSelectDefaultsDir = GenerateFilePickerButton(defaultsDirPathTextField, true);
-        Button btnSelectExportDir = GenerateFilePickerButton(exportDirPathTextField, true);
+        Button btnSelectRepeaterPath = GenerateFilePickerButton(_repeaterPathTextField, false);
+        Button btnSelectTalkgroupsPath = GenerateFilePickerButton(_talkGroupPathTextField, false);
+        Button btnSelectDefaultsDir = GenerateFilePickerButton(_defaultsDirPathTextField, true);
+        Button btnSelectExportDir = GenerateFilePickerButton(_exportDirPathTextField, true);
 
         Button btnGenerate = new () {
             Text = "Generate CSV Files",
@@ -113,24 +115,24 @@ public class MainWindow : Window {
             Width = Dim.Fill()
         };
         
-        btnGenerate.Clicked += generateFiles;
+        btnGenerate.Clicked += GenerateFiles;
 
         Add(
             hamCallsignLabel,
-            hamCallsignTextField,
+            _hamCallsignTextField,
             hamCallsignExplanationLabel,
-            repeaterPathTextField,
+            _repeaterPathTextField,
             repeaterPathLabel, 
             btnSelectRepeaterPath,  
-            talkgroupPathTextField, 
+            _talkGroupPathTextField, 
             talkgroupPathLabel,
             btnSelectTalkgroupsPath,
             defaultsDirPathLabel,
-            defaultsDirPathTextField,
+            _defaultsDirPathTextField,
             btnSelectDefaultsDir,
             defaultsDirPathExplanationLabel,
             exportDirPathLabel,
-            exportDirPathTextField,
+            _exportDirPathTextField,
             btnSelectExportDir,
             btnGenerate
             );
@@ -162,52 +164,46 @@ public class MainWindow : Window {
         return btnChoseFile;
     }
 
-    public void updatePathField(string newPath) {
-        
-    }
-
-    public void generateFiles()  {
+    private void GenerateFiles()  {
         if (
-            !File.Exists(repeaterPathTextField.Text.ToString()) || 
-            !File.Exists(talkgroupPathTextField.Text.ToString())
+            !File.Exists(_repeaterPathTextField.Text.ToString()) || 
+            !File.Exists(_talkGroupPathTextField.Text.ToString())
         ) {
             MessageBox.ErrorQuery("Error", "One of the specified files was not found.", "OK");
             return;
         }
-
+        
+        OevsvRepeaterFileHandler oevsvRepeaterFileHandler;
+        TalkGroupFileHandler talkGroupFileHandler = new TalkGroupFileHandler(_talkGroupPathTextField.Text.ToString());
+        
         // Create export director if it does not exist yet.
         string exportPath = Path.Combine(Directory.GetCurrentDirectory(), "export");
         Directory.CreateDirectory(exportPath);
         
-        TalkGroupFileHandler talkGroupFileHandler = new TalkGroupFileHandler(talkgroupPathTextField.Text.ToString());
-        
-        // TODO error handling if empty talkgroup list
-        
-        OEVSVRepeaterFileHandler oevsvRepeaterFileHandler = new OEVSVRepeaterFileHandler(
-            repeaterPathTextField.Text.ToString(), 
-            talkGroupFileHandler.TalkGroupList,
-            hamCallsignTextField.Text.ToString()
-            );
-
-        List<AnyToneTalkGroup> anyToneTalkgroups = new();
-        foreach (var talkGroup in talkGroupFileHandler.TalkGroupList.Where(tg => tg.AddToList || tg.CreateChannel)) {
-            anyToneTalkgroups.Add(talkGroup.ToAnyToneTalkgroup());
+        try {
+            oevsvRepeaterFileHandler = new OevsvRepeaterFileHandler(_repeaterPathTextField.Text.ToString());
+        } catch (NullReferenceException e) {
+            MessageBox.ErrorQuery("Error", $"There was an error reading the repeater.csv file: {e.Message}", "OK");
+            return;
         }
 
-        oevsvRepeaterFileHandler.TalkGroups = talkGroupFileHandler.TalkGroupList;
+        var anyToneD878UviiPlusParser = new AnyToneD878UVIIPlusParser<OevsvRepeater>(
+            oevsvRepeaterFileHandler.OevsvRepeaters,
+            talkGroupFileHandler.TalkGroupList,
+            _hamCallsignTextField.Text.ToString() ?? "OE0ABC");
 
         // Arm the CSVCreator with all created objects
-        CSVCreator csvCreator = new CSVCreator {
-            Zones = oevsvRepeaterFileHandler.Zones,
-            Channels = oevsvRepeaterFileHandler.Channels,
-            Talkgroups = anyToneTalkgroups,
-            AnalogAddressBook = oevsvRepeaterFileHandler.AnalogContacts,
-            ScanLists = oevsvRepeaterFileHandler.ScanLists,
-            DefaultsDir = defaultsDirPathTextField.Text.ToString(),
-            ExportDir = exportDirPathTextField.Text.ToString() 
+        AnyToneCsvCreator anyToneCsvCreator = new AnyToneCsvCreator {
+            Zones = anyToneD878UviiPlusParser.Zones,
+            Channels = anyToneD878UviiPlusParser.Channels,
+            TalkGroups = anyToneD878UviiPlusParser.TalkGroups,
+            AnalogAddressBook = anyToneD878UviiPlusParser.AnalogContacts,
+            ScanLists = anyToneD878UviiPlusParser.ScanLists,
+            DefaultsDir = _defaultsDirPathTextField.Text.ToString(),
+            ExportDir = _exportDirPathTextField.Text.ToString() 
         };
 
-        csvCreator.CreateAllFiles();
+        anyToneCsvCreator.CreateAllFiles();
 
         MessageBox.Query("Success", "The CSV files were created successfully", "OK");
     }

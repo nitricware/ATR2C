@@ -1,5 +1,4 @@
-﻿using ATCSVCreator.NitricWare;
-using ATCSVCreator.NitricWare.GUI;
+﻿using ATCSVCreator.NitricWare.GUI;
 using Terminal.Gui;
 
 Application.Run<MainWindow>();

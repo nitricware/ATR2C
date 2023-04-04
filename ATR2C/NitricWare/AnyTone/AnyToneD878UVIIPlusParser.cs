@@ -1,105 +1,136 @@
 using System.Globalization;
+using ATCSVCreator.NitricWare.CPSObjects;
+using ATCSVCreator.NitricWare.ENUM;
+using ATCSVCreator.NitricWare.Helper;
+using ATCSVCreator.NitricWare.TalkGroups;
 
-namespace ATCSVCreator.NitricWare; 
+namespace ATCSVCreator.NitricWare.AnyTone; 
 
-public class OEVSVRepeaterFileHandler {
-    public List<TalkGroup> TalkGroups;
-    
+public class AnyToneD878UVIIPlusParser<T> where T : IRepeater {
     public List<AnyToneAnalogContact> AnalogContacts = new();
     public List<AnyToneZone> Zones = new();
     public List<AnyToneChannel> Channels = new();
     public List<AnyToneScanList> ScanLists = new();
+    public List<AnyToneTalkGroup> TalkGroups = new();
 
-    public string HamCallsign;
+    private List<T> _repeaterList;
+    private List<TalkGroup> _talkGroups;
 
-    public OEVSVRepeaterFileHandler(string path, List<TalkGroup> talkgroups, string hamCallsign) {
-        TalkGroups = talkgroups;
-        HamCallsign = hamCallsign;
-        foreach (string line in File.ReadAllLines(path)
-                     .Skip(1)
-                     .Where(SkipLine)) {
-            string[] columns = line.Split(Settings.separator);
-            ParseRepeater(columns);
+    private string _hamCallsign;
+
+    public AnyToneD878UVIIPlusParser(List<T> repeaterList, List<TalkGroup> talkGroups, string hamCallsign) {
+        _repeaterList = repeaterList;
+        _talkGroups = talkGroups;
+        _hamCallsign = hamCallsign;
+        
+        foreach (T repeater in _repeaterList) {
+            if (SkipRepeater(repeater)) {
+                continue;
+            }
+            ParseRepeater(repeater);
         }
+
+        TalkGroups = _talkGroups
+            .Where(x => x.AddToList)
+            .Select(TalkGroupToAnyToneTalkGroup)
+            .ToList();
     }
 
-    public bool SkipLine(string line) {
-        string[] values = line.Split(Settings.separator);
-        
+    private AnyToneTalkGroup TalkGroupToAnyToneTalkGroup(TalkGroup talkGroup) {
+        return new() {
+            Name = talkGroup.Name,
+            RadioId = talkGroup.DmrId,
+            CallAlert = talkGroup.CallAlert,
+            CallType = talkGroup.CallType
+        };
+    }
+
+    private bool SkipRepeater(T repeater) {
         // Only parse 70cm and 2m repeaters
-        if (values[(int) OEVSVRepeaterCSVColumns.Band] != "70cm" && values[(int) OEVSVRepeaterCSVColumns.Band] != "2m") {
-            return false;
+        if (repeater.Band != RadioBand.CM70 && repeater.Band != RadioBand.M2) {
+            return true;
         }
         
         // Only parse voice repeaters; typo in csv;
-        if (values[(int) OEVSVRepeaterCSVColumns.Type] != "repeater_voice" && values[(int) OEVSVRepeaterCSVColumns.Type] != "repeaer_voice") {
-            return false;
+        if (repeater.Type != StationType.RepeaterVoice) {
+            return true;
         }
         
         // Only parse active repeaters
-        if (values[(int) OEVSVRepeaterCSVColumns.Status] != "active") {
-            return false;
+        if (repeater.Status != RepeaterStatus.Active) {
+            return true;
         }
         
         // Ignore remaining entries that do not have neither FM nor DMR marked
-        if (values[(int) OEVSVRepeaterCSVColumns.FM] != "1" && values[(int) OEVSVRepeaterCSVColumns.DMR] != "1") {
-            return false;
+        if (!repeater.IsFM && !repeater.IsDmr) {
+            return true;
         }
 
-        return true;
+        return false;
     }
-
-    public void ParseRepeater(string[] values) {
+    
+    // TODO: make functional
+    private void ParseRepeater(T repeater) {
         // 1. check if the repeater is fm, dmr or both
         // 2. if its dmr, create a zone and add channels (BM/I2/BO) to it
         // 3. if it's fm, create a zone (location, omit if it already exists) and add the repeater as a channel.
         // 4. if it's fm add the echolink code to the address book
-        
-        string channelCallsign = Convert.ToString(values[Settings.RepeaterCSVColumns["callsign"]]);
-        string channelBand = Convert.ToString(values[Settings.RepeaterCSVColumns["band"]]);
-        string repeaterLocation = values[(int)OEVSVRepeaterCSVColumns.Callsign].Substring(0, 3);
+        string channelCallsign = repeater.Callsign;
+        string channelBand;
+        switch (repeater.Band) {
+            case RadioBand.CM70:
+                channelBand = "70cm";
+                break;
+            case RadioBand.M2:
+                channelBand = "2m";
+                break;
+            default:
+                channelBand = "0m";
+                break;
+        }
+        string repeaterLocation = repeater.Callsign.Substring(0, 3);
 
         string channelTx = Convert.ToDouble(
-            values[Settings.RepeaterCSVColumns["tx"]],
+            repeater.Tx,
             CultureInfo.InvariantCulture)
             .ToString("0.00000")
             .Replace(",",".");
         string channelRx = Convert.ToDouble(
-            values[Settings.RepeaterCSVColumns["rx"]],
+           repeater.Rx,
             CultureInfo.InvariantCulture)
             .ToString("0.00000")
             .Replace(",",".");
 
         // Check if the repeater is FM, DMR or both
-        if (values[(int)OEVSVRepeaterCSVColumns.FM] == "1") {
+        if (repeater.IsFM) {
             // The repeater is FM; it may also be DMR;
             // Create channel for the repeater;
             
-            string channelFMCTCSSTx = values[Settings.RepeaterCSVColumns["ctcsstx"]].Length < 1
+            string channelFmctcssTx = repeater.CtcssTx.Length < 1
                 ? "Off"
-                : values[Settings.RepeaterCSVColumns["ctcsstx"]];
-            string channelFMCTCSSRx = values[Settings.RepeaterCSVColumns["ctcssrx"]].Length < 1
+                : repeater.CtcssTx;
+            string channelFmctcssRx = repeater.CtcssRx.Length < 1
                 ? "Off"
-                : values[Settings.RepeaterCSVColumns["ctcssrx"]];
+                : repeater.CtcssRx;
             
-            string channelFMSquelchMode = channelFMCTCSSRx != "Off" || channelFMCTCSSTx != "Off" ? "CTCSS/DCS" : "Carrier";
+            string channelFmSquelchMode = channelFmctcssRx != "Off" || channelFmctcssTx != "Off" ? "CTCSS/DCS" : "Carrier";
             
-            AnyToneChannel channelFM = new AnyToneChannel {
+            AnyToneChannel channelFm = new AnyToneChannel {
                 ChannelName = $"{ channelCallsign } { channelBand }".Truncate(16),
                 ReceiveFrequency = channelRx,
                 TransmitFrequency = channelTx,
                 ChannelType = "A-Analog",
-                CTCSSDecode = channelFMCTCSSTx,
-                CTCSSEncode = channelFMCTCSSRx,
-                SquelchMode = channelFMSquelchMode,
-                APRSReportType = "Analog",
-                CustomCTCSS = "251.1",
+                CtcssDecode = channelFmctcssTx,
+                CtcssEncode = channelFmctcssRx,
+                SquelchMode = channelFmSquelchMode,
+                AprsReportType = "Analog",
+                CustomCtcss = "251.1",
                 BusyLock = "Off",
                 ColorCode = "1",
-                RadioID = HamCallsign
+                RadioId = _hamCallsign
             };
             
-            Channels.Add(channelFM);
+            Channels.Add(channelFm);
             
             string channelZoneName = repeaterLocation + " FM";
             //zone = Zones.Any(x => x.ChannelName == location + " FM");
@@ -111,15 +142,15 @@ public class OEVSVRepeaterFileHandler {
 
                 zone = new AnyToneZone {
                     ZoneName = channelZoneName,
-                    ZoneChannelMember = channelFM.ChannelName,
-                    ZoneChannelMemberRXFrequency = channelFM.ReceiveFrequency,
-                    ZoneChannelMemberTXFrequency = channelFM.TransmitFrequency,
-                    AChannel = channelFM.ChannelName,
-                    AChannelRXFrequency = channelFM.ReceiveFrequency,
-                    AChannelTXFrequency = channelFM.TransmitFrequency,
-                    BChannel = channelFM.ChannelName,
-                    BChannelRXFrequency = channelFM.ReceiveFrequency,
-                    BChannelTXFrequency = channelFM.TransmitFrequency
+                    ZoneChannelMember = channelFm.ChannelName,
+                    ZoneChannelMemberRxFrequency = channelFm.ReceiveFrequency,
+                    ZoneChannelMemberTxFrequency = channelFm.TransmitFrequency,
+                    AChannel = channelFm.ChannelName,
+                    AChannelRxFrequency = channelFm.ReceiveFrequency,
+                    AChannelTxFrequency = channelFm.TransmitFrequency,
+                    BChannel = channelFm.ChannelName,
+                    BChannelRxFrequency = channelFm.ReceiveFrequency,
+                    BChannelTxFrequency = channelFm.TransmitFrequency
                 };
                 
                 Zones.Add(zone);
@@ -127,17 +158,17 @@ public class OEVSVRepeaterFileHandler {
                 // Zone for repeater location does exist.
                 // Adding current channel.
                 
-                zone.ZoneChannelMember += $"|{channelFM.ChannelName}";
-                zone.ZoneChannelMemberRXFrequency += $"|{channelFM.ReceiveFrequency}";
-                zone.ZoneChannelMemberTXFrequency += $"|{channelFM.TransmitFrequency}";
+                zone.ZoneChannelMember += $"|{channelFm.ChannelName}";
+                zone.ZoneChannelMemberRxFrequency += $"|{channelFm.ReceiveFrequency}";
+                zone.ZoneChannelMemberTxFrequency += $"|{channelFm.TransmitFrequency}";
             }
             
             // Add the repeater's EchoLink Address to the AddressBook
             
-            if (values[(int) OEVSVRepeaterCSVColumns.EchoLink] == "1") {
+            if (repeater.IsEchoLink) {
                 var analogContact = new AnyToneAnalogContact {
                     Name = channelCallsign,
-                    Number = values[(int) OEVSVRepeaterCSVColumns.EchoLinkID]
+                    Number = repeater.EchoLinkId
                 };
 
                 AnalogContacts.Add(analogContact);
@@ -151,47 +182,44 @@ public class OEVSVRepeaterFileHandler {
                 if (scanList == null) {
                     scanList = new AnyToneScanList {
                         ScanListName = scanListName,
-                        ScanChannelMember = channelFM.ChannelName,
-                        ScanChannelMemberTXFrequency = channelFM.TransmitFrequency,
-                        ScanChannelMemberRXFrequency = channelFM.ReceiveFrequency
+                        ScanChannelMember = channelFm.ChannelName,
+                        ScanChannelMemberTxFrequency = channelFm.TransmitFrequency,
+                        ScanChannelMemberRxFrequency = channelFm.ReceiveFrequency
                     };
                     
                     ScanLists.Add(scanList);
                 } else {
-                    scanList.ScanChannelMember += $"|{channelFM.ChannelName}";
-                    scanList.ScanChannelMemberTXFrequency += $"|{channelFM.TransmitFrequency}";
-                    scanList.ScanChannelMemberRXFrequency += $"|{channelFM.ReceiveFrequency}";
+                    scanList.ScanChannelMember += $"|{channelFm.ChannelName}";
+                    scanList.ScanChannelMemberTxFrequency += $"|{channelFm.TransmitFrequency}";
+                    scanList.ScanChannelMemberRxFrequency += $"|{channelFm.ReceiveFrequency}";
                 }
 
-                channelFM.ScanList = scanList.ScanListName;
+                channelFm.ScanList = scanList.ScanListName;
             }
         }
 
-        if (values[(int)OEVSVRepeaterCSVColumns.DMR] == "1") {
+        if (repeater.IsDmr) {
             // Channel is DMR
             // Create a zone for the repeater.
             // Then, create channels for selected TGs based on the
             // repeater network
             string shortCallsign = channelCallsign.Substring(3);
-            DMRNetwork repeaterNetwork = DMRNetwork.BO;
+            DmrNetwork repeaterNetwork = DmrNetwork.Bo;
             
-            if (values[(int)OEVSVRepeaterCSVColumns.Brandmeister] == "1" &&
-                values[(int)OEVSVRepeaterCSVColumns.IPSC2] == "1") {
-                repeaterNetwork = DMRNetwork.BO;
-            } else if (values[(int)OEVSVRepeaterCSVColumns.Brandmeister] == "" &&
-                       values[(int)OEVSVRepeaterCSVColumns.IPSC2] == "1") {
-                repeaterNetwork = DMRNetwork.I2;
-            } else if (values[(int)OEVSVRepeaterCSVColumns.Brandmeister] == "1" &&
-                       values[(int)OEVSVRepeaterCSVColumns.IPSC2] == "") {
-                repeaterNetwork = DMRNetwork.BM;
+            if (repeater.IsBrandmeister && repeater.IsIpsc2) {
+                repeaterNetwork = DmrNetwork.Bo;
+            } else if (!repeater.IsBrandmeister && repeater.IsIpsc2) {
+                repeaterNetwork = DmrNetwork.I2;
+            } else if (repeater.IsBrandmeister && repeater.IsIpsc2) {
+                repeaterNetwork = DmrNetwork.Bm;
             }
 
             List<AnyToneChannel> digitalChannels = new();
 
-            foreach (var talkgroup in TalkGroups
+            foreach (var talkgroup in _talkGroups
                          .Where(tg => tg.CreateChannel)) {
                 // Create a channel for each talkgroup that is marked for channel creation in talkgroups.csv
-                if (repeaterNetwork != DMRNetwork.BO && repeaterNetwork != talkgroup.Network) {
+                if (repeaterNetwork != DmrNetwork.Bo && repeaterNetwork != talkgroup.Network) {
                     // Skip any talkgroup that does not match the network of the repeater;
                     // Do not skip any talkgroup if the repeater supports both talkgroups;
                     continue;
@@ -203,10 +231,10 @@ public class OEVSVRepeaterFileHandler {
                     TransmitFrequency = channelTx,
                     ChannelType = "D-Digital",
                     Contact = talkgroup.Name,
-                    ContactTG = talkgroup.DMRid.ToString(),
-                    ColorCode = values[(int)OEVSVRepeaterCSVColumns.Colorcode],
+                    ContactTg = talkgroup.DmrId.ToString(),
+                    ColorCode = repeater.ColorCode,
                     Slot = talkgroup.TimeSlot.ToString(),
-                    RadioID = HamCallsign
+                    RadioId = _hamCallsign
                 };
                 
                 // Create a scanlist if needed and add this repeater to if marked
@@ -218,15 +246,15 @@ public class OEVSVRepeaterFileHandler {
                         scanList = new AnyToneScanList {
                             ScanListName = scanListName,
                             ScanChannelMember = digitalChannel.ChannelName,
-                            ScanChannelMemberTXFrequency = digitalChannel.TransmitFrequency,
-                            ScanChannelMemberRXFrequency = digitalChannel.ReceiveFrequency
+                            ScanChannelMemberTxFrequency = digitalChannel.TransmitFrequency,
+                            ScanChannelMemberRxFrequency = digitalChannel.ReceiveFrequency
                         };
                         
                         ScanLists.Add(scanList);
                     } else {
                         scanList.ScanChannelMember += $"|{digitalChannel.ChannelName}";
-                        scanList.ScanChannelMemberTXFrequency += $"|{digitalChannel.TransmitFrequency}";
-                        scanList.ScanChannelMemberRXFrequency += $"|{digitalChannel.ReceiveFrequency}";
+                        scanList.ScanChannelMemberTxFrequency += $"|{digitalChannel.TransmitFrequency}";
+                        scanList.ScanChannelMemberRxFrequency += $"|{digitalChannel.ReceiveFrequency}";
                         
                     }
 
@@ -238,23 +266,23 @@ public class OEVSVRepeaterFileHandler {
             
             // Create a zone and add the first channel to the zone
             AnyToneZone digitalZone = new AnyToneZone {
-                ZoneName = $"{channelCallsign} {channelBand} {values[(int)OEVSVRepeaterCSVColumns.Site]}".Truncate(16),
+                ZoneName = $"{channelCallsign} {channelBand} {repeater.SiteName}".Truncate(16),
                 ZoneChannelMember = digitalChannels.First().ChannelName,
-                ZoneChannelMemberRXFrequency = digitalChannels.First().ReceiveFrequency,
-                ZoneChannelMemberTXFrequency = digitalChannels.First().TransmitFrequency,
+                ZoneChannelMemberRxFrequency = digitalChannels.First().ReceiveFrequency,
+                ZoneChannelMemberTxFrequency = digitalChannels.First().TransmitFrequency,
                 AChannel = digitalChannels.First().ChannelName,
-                AChannelRXFrequency = digitalChannels.First().ReceiveFrequency,
-                AChannelTXFrequency = digitalChannels.First().TransmitFrequency,
+                AChannelRxFrequency = digitalChannels.First().ReceiveFrequency,
+                AChannelTxFrequency = digitalChannels.First().TransmitFrequency,
                 BChannel = digitalChannels.First().ChannelName,
-                BChannelRXFrequency = digitalChannels.First().ReceiveFrequency,
-                BChannelTXFrequency = digitalChannels.First().TransmitFrequency
+                BChannelRxFrequency = digitalChannels.First().ReceiveFrequency,
+                BChannelTxFrequency = digitalChannels.First().TransmitFrequency
             };
 
             foreach (var digitalChannel in digitalChannels.Skip(1)) {
                 // Add the remaining channels to the zone
                 digitalZone.ZoneChannelMember += $"|{digitalChannel.ChannelName}";
-                digitalZone.ZoneChannelMemberRXFrequency += $"|{digitalChannel.ReceiveFrequency}";
-                digitalZone.ZoneChannelMemberTXFrequency += $"|{digitalChannel.TransmitFrequency}";
+                digitalZone.ZoneChannelMemberRxFrequency += $"|{digitalChannel.ReceiveFrequency}";
+                digitalZone.ZoneChannelMemberTxFrequency += $"|{digitalChannel.TransmitFrequency}";
             }
             
             // Add the zone to the Zones List
