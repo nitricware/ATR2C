@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Globalization;
 using CsvHelper;
 using CsvHelper.Configuration;
@@ -20,65 +21,27 @@ public class AnyToneCsvCreator {
     };
 
     public void CreateAllFiles() {
-        CreateZonesFile();
-        CreateChannelsFile();
-        CreateAnalogAddressBookFile();
-        CreateTalkGroupsFile();
-        CreateScanListFile();
+        ExportDir ??= Path.Combine(Directory.GetCurrentDirectory(), "export");
+        DefaultsDir ??= Path.Combine(Directory.GetCurrentDirectory(), "defaults", "AnyTone AT-D878UVII Plus");
+
+        ExportDir = Path.Combine(ExportDir, "AnyTone AT-D878UVII Plus");
+        DefaultsDir = Path.Combine(DefaultsDir, "AnyTone AT-D878UVII Plus");
+        Directory.CreateDirectory(ExportDir);
         
-        // TODO: implement bonus CHIRP export of channels only as CHIRP does not support zones
-        
+        CreateFile("Zone.csv", Zones);
+        CreateFile("Channels.csv", Channels);
+        CreateFile("AnalogAddressBook.csv", AnalogAddressBook);
+        CreateFile("Talkgroups.csv", TalkGroups);
+        CreateFile("Scanlist.csv", ScanLists);
+
         MergeDefaults();
     }
 
-    private void CreateZonesFile() {
+    private void CreateFile(string filename, IEnumerable data) {
         using var writer = new StreamWriter(
-            Path.Combine(
-                ExportDir ?? Path.Combine(Directory.GetCurrentDirectory(),"export"),
-                "Zone.csv"
-            ));
+            Path.Combine(ExportDir, filename));
         using var csv = new CsvWriter(writer, _config);
-        csv.WriteRecords(Zones);
-    }
-
-    private void CreateChannelsFile() {
-        using var writer = new StreamWriter(
-            Path.Combine(
-                ExportDir ?? Path.Combine(Directory.GetCurrentDirectory(),"export"),
-                "Channel.csv"
-            ));
-        using var csv = new CsvWriter(writer, _config);
-        csv.WriteRecords(Channels);
-    }
-
-    private void CreateTalkGroupsFile() {
-        using var writer = new StreamWriter(
-            Path.Combine(
-                ExportDir ?? Path.Combine(Directory.GetCurrentDirectory(),"export"),
-                "TalkGroups.csv"
-            ));
-        using var csv = new CsvWriter(writer, _config);
-        csv.WriteRecords(TalkGroups);
-    }
-    
-    private void CreateAnalogAddressBookFile() {
-        using var writer = new StreamWriter(
-            Path.Combine(
-                ExportDir ?? Path.Combine(Directory.GetCurrentDirectory(),"export"),
-                "AnalogAddressBook.csv"
-            ));
-        using var csv = new CsvWriter(writer, _config);
-        csv.WriteRecords(AnalogAddressBook);
-    }
-
-    private void CreateScanListFile() {
-        using var writer = new StreamWriter(
-            Path.Combine(
-                ExportDir ?? Path.Combine(Directory.GetCurrentDirectory(),"export"),
-                "ScanList.csv"
-            ));
-        using var csv = new CsvWriter(writer, _config);
-        csv.WriteRecords(ScanLists);
+        csv.WriteRecords(data);
     }
 
     private void MergeDefaults() {
@@ -90,23 +53,16 @@ public class AnyToneCsvCreator {
 
     private void MergeFile(string file) {
         if (!File.Exists(
-                Path.Combine(
-                    DefaultsDir ?? Path.Combine(Directory.GetCurrentDirectory(),"defaults"),file)
-                )
+                Path.Combine(DefaultsDir,file))
             ) {
             return;
         }
         
         var generatedFile = File.Open(
-            Path.Combine(
-                ExportDir ?? Path.Combine(Directory.GetCurrentDirectory(),"export"),
-                file
-                ), 
+            Path.Combine(ExportDir, file), 
             FileMode.Append ,FileAccess.Write);
         var defaultsFile = File.OpenRead(
-            Path.Combine(
-                DefaultsDir ?? Path.Combine(Directory.GetCurrentDirectory(),"defaults"),
-                file)
+            Path.Combine(DefaultsDir, file)
             );
         
         defaultsFile.CopyTo(generatedFile);

@@ -1,9 +1,10 @@
 using ATCSVCreator.NitricWare.AnyTone;
+using ATCSVCreator.NitricWare.Helper;
 using ATCSVCreator.NitricWare.Oevsv;
 using ATCSVCreator.NitricWare.TalkGroups;
-
-namespace ATCSVCreator.NitricWare.GUI; 
 using Terminal.Gui;
+
+namespace ATCSVCreator.NitricWare.GUI;
 
 public class MainWindow : Window {
     private readonly TextField _repeaterPathTextField;
@@ -16,6 +17,9 @@ public class MainWindow : Window {
     private readonly string _exportDirPath = Path.Combine(Directory.GetCurrentDirectory(),"export");
     private readonly TextField _hamCallsignTextField;
     private readonly string _hamCallsign = Path.Combine(Settings.HamCallSign);
+    private readonly ComboBox _exportTypeComboBox;
+
+    private List<View> _views = new();
     
     public MainWindow() {
         Title = "ATR2C (CTRL + Q to quit)";
@@ -23,6 +27,7 @@ public class MainWindow : Window {
         Label hamCallsignLabel = new() {
             Text = "Callsign"
         };
+        _views.Add(hamCallsignLabel);
 
         _hamCallsignTextField = new TextField(_hamCallsign) {
             // Position text field adjacent to the label
@@ -30,6 +35,8 @@ public class MainWindow : Window {
             // Fill remaining horizontal space
             Width = Dim.Fill (15)
         };
+        
+        _views.Add(_hamCallsignTextField);
 
         Label hamCallsignExplanationLabel = new() {
             Text = "Must match a Radio ID in CPS.",
@@ -37,12 +44,16 @@ public class MainWindow : Window {
             Y = Pos.Bottom(_hamCallsignTextField),
             Width = Dim.Fill()
         };
-        
+
+        _views.Add(hamCallsignExplanationLabel);
+
         Label repeaterPathLabel = new() {
             Text = "Path to repeater.csv",
             X = Pos.Left(hamCallsignLabel),
             Y = Pos.Bottom(hamCallsignExplanationLabel) + 1
         };
+        
+        _views.Add(repeaterPathLabel);
 
         _repeaterPathTextField = new TextField(_repeaterPath) {
             // Position text field adjacent to the label
@@ -52,11 +63,19 @@ public class MainWindow : Window {
             Width = Dim.Fill (15)
         };
         
+        _views.Add(_repeaterPathTextField);
+        
+        Button btnSelectRepeaterPath = GenerateFilePickerButton(_repeaterPathTextField, false);
+        
+        _views.Add(btnSelectRepeaterPath);
+        
         Label talkgroupPathLabel = new() {
             Text = "Path to talkgroups.csv",
             X = Pos.Left (repeaterPathLabel),
             Y = Pos.Bottom (_repeaterPathTextField) +1
         };
+        
+        _views.Add(talkgroupPathLabel);
 
         _talkGroupPathTextField = new TextField(_talkGroupPath) {
             // Position text field adjacent to the label
@@ -65,12 +84,20 @@ public class MainWindow : Window {
             // Fill remaining horizontal space
             Width = Dim.Fill(15)
         };
+        
+        _views.Add(_talkGroupPathTextField);
+        
+        Button btnSelectTalkgroupsPath = GenerateFilePickerButton(_talkGroupPathTextField, false);
+        
+        _views.Add(btnSelectTalkgroupsPath);
 
         Label defaultsDirPathLabel = new() {
             Text = "Path to /defaults/",
             X = Pos.Left(talkgroupPathLabel),
             Y = Pos.Bottom(_talkGroupPathTextField) +1
         };
+        
+        _views.Add(defaultsDirPathLabel);
         
         _defaultsDirPathTextField = new TextField(_defaultsDirPath) {
             // Position text field adjacent to the label
@@ -80,18 +107,30 @@ public class MainWindow : Window {
             Width = Dim.Fill(15)
         };
         
+        _views.Add(_defaultsDirPathTextField);
+
         Label defaultsDirPathExplanationLabel = new() {
-            Text = "Select the directory in which the default .csv files\nthat are merged with the final product reside.\nCan contain none, any or all defaults files.",
+            Text = "Select the directory in which the default .csv files that are merged with the final product reside. The directory must contain a sub folder named exactly as the export type (i.e. \"CHIRP\"). Subfolder an contain none, any or all defaults files."
+                .AddLineBreaks(78,""),
             X = Pos.Left(defaultsDirPathLabel),
             Y = Pos.Bottom(_defaultsDirPathTextField),
-            Width = Dim.Fill()
+            Width = Dim.Fill(),
+            AutoSize = true
         };
+        
+        _views.Add(defaultsDirPathExplanationLabel);
+        
+        Button btnSelectDefaultsDir = GenerateFilePickerButton(_defaultsDirPathTextField, true);
+        
+        _views.Add(btnSelectDefaultsDir);
         
         Label exportDirPathLabel = new() {
             Text = "Path to /export/",
             X = Pos.Left(defaultsDirPathExplanationLabel),
             Y = Pos.Bottom(defaultsDirPathExplanationLabel) +1
         };
+        
+        _views.Add(exportDirPathLabel);
         
         _exportDirPathTextField = new TextField(_exportDirPath) {
             // Position text field adjacent to the label
@@ -100,15 +139,43 @@ public class MainWindow : Window {
             // Fill remaining horizontal space
             Width = Dim.Fill(15)
         };
-
-        Button btnSelectRepeaterPath = GenerateFilePickerButton(_repeaterPathTextField, false);
-        Button btnSelectTalkgroupsPath = GenerateFilePickerButton(_talkGroupPathTextField, false);
-        Button btnSelectDefaultsDir = GenerateFilePickerButton(_defaultsDirPathTextField, true);
+        
+        _views.Add(_exportDirPathTextField);
+        
         Button btnSelectExportDir = GenerateFilePickerButton(_exportDirPathTextField, true);
+        
+        _views.Add(btnSelectExportDir);
+        
+        Label exportTypeLabel = new() {
+            Text = "Export Type",
+            X = Pos.Left(exportDirPathLabel),
+            Y = Pos.Bottom(exportDirPathLabel) +1
+        };
+        
+        _views.Add(exportTypeLabel);
+
+        List<string> exportTypes = new List<string>() {
+            "AnyTone AT-D878UVII Plus",
+            "CHIRP"
+        };
+
+        //IListDataSource exportTypesSource = new ListWrapper();
+
+        _exportTypeComboBox = new ComboBox {
+            Width = Dim.Fill(15),
+            X = Pos.Left (_exportDirPathTextField) ,
+            Y = Pos.Bottom (_exportDirPathTextField) + 1
+        };
+        
+        _exportTypeComboBox.SetSource(exportTypes);
+        _exportTypeComboBox.SelectedItem = 0;
+        _exportTypeComboBox.Height = exportTypes.Count + 1;
+        
+        _views.Add(_exportTypeComboBox);
 
         Button btnGenerate = new () {
             Text = "Generate CSV Files",
-            Y = Pos.Bottom(exportDirPathLabel) + 2,
+            Y = Pos.Top(_views.Last()) +2 ,
             // center the login button horizontally
             X = Pos.Center (),
             IsDefault = true,
@@ -116,26 +183,10 @@ public class MainWindow : Window {
         };
         
         btnGenerate.Clicked += GenerateFiles;
+        
+        _views.Add(btnGenerate);
 
-        Add(
-            hamCallsignLabel,
-            _hamCallsignTextField,
-            hamCallsignExplanationLabel,
-            _repeaterPathTextField,
-            repeaterPathLabel, 
-            btnSelectRepeaterPath,  
-            _talkGroupPathTextField, 
-            talkgroupPathLabel,
-            btnSelectTalkgroupsPath,
-            defaultsDirPathLabel,
-            _defaultsDirPathTextField,
-            btnSelectDefaultsDir,
-            defaultsDirPathExplanationLabel,
-            exportDirPathLabel,
-            _exportDirPathTextField,
-            btnSelectExportDir,
-            btnGenerate
-            );
+        Add(_views.ToArray());
     }
 
     private Button GenerateFilePickerButton(TextField parent, bool dirSelect) {
@@ -165,6 +216,7 @@ public class MainWindow : Window {
     }
 
     private void GenerateFiles()  {
+        // TODO: move to ATR2C class?
         if (
             !File.Exists(_repeaterPathTextField.Text.ToString()) || 
             !File.Exists(_talkGroupPathTextField.Text.ToString())
@@ -187,23 +239,33 @@ public class MainWindow : Window {
             return;
         }
 
-        var anyToneD878UviiPlusParser = new AnyToneD878UVIIPlusParser<OevsvRepeater>(
-            oevsvRepeaterFileHandler.OevsvRepeaters,
-            talkGroupFileHandler.TalkGroupList,
-            _hamCallsignTextField.Text.ToString() ?? "OE0ABC");
+        switch (_exportTypeComboBox.Text.ToString()) {
+            case "AnyTone AT-D878UVII Plus":
+                var anyToneD878UviiPlusParser = new AnyToneD878UVIIPlusParser<OevsvRepeater>(
+                    oevsvRepeaterFileHandler.OevsvRepeaters,
+                    talkGroupFileHandler.TalkGroupList,
+                    _hamCallsignTextField.Text.ToString() ?? Settings.HamCallSign);
 
-        // Arm the CSVCreator with all created objects
-        AnyToneCsvCreator anyToneCsvCreator = new AnyToneCsvCreator {
-            Zones = anyToneD878UviiPlusParser.Zones,
-            Channels = anyToneD878UviiPlusParser.Channels,
-            TalkGroups = anyToneD878UviiPlusParser.TalkGroups,
-            AnalogAddressBook = anyToneD878UviiPlusParser.AnalogContacts,
-            ScanLists = anyToneD878UviiPlusParser.ScanLists,
-            DefaultsDir = _defaultsDirPathTextField.Text.ToString(),
-            ExportDir = _exportDirPathTextField.Text.ToString() 
-        };
+                // Arm the CSVCreator with all created objects
+                AnyToneCsvCreator anyToneCsvCreator = new AnyToneCsvCreator {
+                    Zones = anyToneD878UviiPlusParser.Zones,
+                    Channels = anyToneD878UviiPlusParser.Channels,
+                    TalkGroups = anyToneD878UviiPlusParser.TalkGroups,
+                    AnalogAddressBook = anyToneD878UviiPlusParser.AnalogContacts,
+                    ScanLists = anyToneD878UviiPlusParser.ScanLists,
+                    DefaultsDir = _defaultsDirPathTextField.Text.ToString(),
+                    ExportDir = _exportDirPathTextField.Text.ToString() 
+                };
 
-        anyToneCsvCreator.CreateAllFiles();
+                anyToneCsvCreator.CreateAllFiles();
+                break;
+            case "CHIRP":
+                
+                break;
+            default:
+                MessageBox.ErrorQuery("Error", $"Unknown Export Type", "OK");
+                break;
+        }
 
         MessageBox.Query("Success", "The CSV files were created successfully", "OK");
     }
