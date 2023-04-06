@@ -69,8 +69,197 @@ public class AnyToneD878UVIIPlusParser<T> where T : IRepeater {
 
         return false;
     }
+
+    private void CreateAnalog(T repeater, string channelRx, string channelTx, string channelBand, string channelCallsign, string repeaterLocation) {
+        // The repeater is FM; it may also be DMR;
+        // Create channel for the repeater;
+        
+        string channelFmctcssTx = repeater.CtcssTx.Length < 1
+            ? "Off"
+            : repeater.CtcssTx;
+        string channelFmctcssRx = repeater.CtcssRx.Length < 1
+            ? "Off"
+            : repeater.CtcssRx;
+        
+        string channelFmSquelchMode = channelFmctcssRx != "Off" || channelFmctcssTx != "Off" ? "CTCSS/DCS" : "Carrier";
+        
+        AnyToneChannel channelFm = new AnyToneChannel {
+            ChannelName = $"{ channelCallsign } { channelBand }".Truncate(16),
+            ReceiveFrequency = channelRx,
+            TransmitFrequency = channelTx,
+            ChannelType = "A-Analog",
+            CtcssDecode = channelFmctcssTx,
+            CtcssEncode = channelFmctcssRx,
+            SquelchMode = channelFmSquelchMode,
+            AprsReportType = "Analog",
+            CustomCtcss = "251.1",
+            BusyLock = "Off",
+            ColorCode = "1",
+            RadioId = _hamCallsign
+        };
+        
+        Channels.Add(channelFm);
+        
+        string channelZoneName = repeaterLocation + " FM";
+        //zone = Zones.Any(x => x.ChannelName == location + " FM");
+        AnyToneZone? zone = Zones.FirstOrDefault(x => x.ZoneName == channelZoneName);
+
+        if (zone == null) {
+            // Zone for repeater location does not exist yet.
+            // Creating zone and adding current channel.
+
+            zone = new AnyToneZone {
+                ZoneName = channelZoneName,
+                ZoneChannelMember = channelFm.ChannelName,
+                ZoneChannelMemberRxFrequency = channelFm.ReceiveFrequency,
+                ZoneChannelMemberTxFrequency = channelFm.TransmitFrequency,
+                AChannel = channelFm.ChannelName,
+                AChannelRxFrequency = channelFm.ReceiveFrequency,
+                AChannelTxFrequency = channelFm.TransmitFrequency,
+                BChannel = channelFm.ChannelName,
+                BChannelRxFrequency = channelFm.ReceiveFrequency,
+                BChannelTxFrequency = channelFm.TransmitFrequency
+            };
+            
+            Zones.Add(zone);
+        } else {
+            // Zone for repeater location does exist.
+            // Adding current channel.
+            
+            zone.ZoneChannelMember += $"|{channelFm.ChannelName}";
+            zone.ZoneChannelMemberRxFrequency += $"|{channelFm.ReceiveFrequency}";
+            zone.ZoneChannelMemberTxFrequency += $"|{channelFm.TransmitFrequency}";
+        }
+        
+        // Add the repeater's EchoLink Address to the AddressBook
+        
+        if (repeater.IsEchoLink) {
+            var analogContact = new AnyToneAnalogContact {
+                Name = channelCallsign,
+                Number = repeater.EchoLinkId
+            };
+
+            AnalogContacts.Add(analogContact);
+        }
+        
+        // Create a Scan List if necessary and add the repeater to it
+
+        if (Settings.CreateAnalogScanLists) {
+            string scanListName = repeaterLocation + " Analog";
+            AnyToneScanList? scanList = ScanLists.FirstOrDefault(x => x.ScanListName == scanListName);
+            if (scanList == null) {
+                scanList = new AnyToneScanList {
+                    ScanListName = scanListName,
+                    ScanChannelMember = channelFm.ChannelName,
+                    ScanChannelMemberTxFrequency = channelFm.TransmitFrequency,
+                    ScanChannelMemberRxFrequency = channelFm.ReceiveFrequency
+                };
+                
+                ScanLists.Add(scanList);
+            } else {
+                scanList.ScanChannelMember += $"|{channelFm.ChannelName}";
+                scanList.ScanChannelMemberTxFrequency += $"|{channelFm.TransmitFrequency}";
+                scanList.ScanChannelMemberRxFrequency += $"|{channelFm.ReceiveFrequency}";
+            }
+
+            channelFm.ScanList = scanList.ScanListName;
+        }
+    }
+
+    private void CreateDigital(T repeater, string channelRx, string channelTx, string channelBand, string channelCallsign, string repeaterLocation) {
+        // Channel is DMR
+        // Create a zone for the repeater.
+        // Then, create channels for selected TGs based on the
+        // repeater network
+        string shortCallsign = channelCallsign.Substring(3);
+        DmrNetwork repeaterNetwork = DmrNetwork.Bo;
+        
+        if (repeater.IsBrandmeister && repeater.IsIpsc2) {
+            repeaterNetwork = DmrNetwork.Bo;
+        } else if (!repeater.IsBrandmeister && repeater.IsIpsc2) {
+            repeaterNetwork = DmrNetwork.I2;
+        } else if (repeater.IsBrandmeister && repeater.IsIpsc2) {
+            repeaterNetwork = DmrNetwork.Bm;
+        }
+
+        List<AnyToneChannel> digitalChannels = new();
+
+        foreach (var talkgroup in _talkGroups
+                     .Where(tg => tg.CreateChannel)) {
+            // Create a channel for each talkgroup that is marked for channel creation in talkgroups.csv
+            if (repeaterNetwork != DmrNetwork.Bo && repeaterNetwork != talkgroup.Network) {
+                // Skip any talkgroup that does not match the network of the repeater;
+                // Do not skip any talkgroup if the repeater supports both talkgroups;
+                continue;
+            }
+
+            AnyToneChannel digitalChannel = new AnyToneChannel {
+                ChannelName = $"{shortCallsign}-{talkgroup.Network}-{talkgroup.Name}".Truncate(16),
+                ReceiveFrequency = channelRx,
+                TransmitFrequency = channelTx,
+                ChannelType = "D-Digital",
+                Contact = talkgroup.Name,
+                ContactTg = talkgroup.DmrId.ToString(),
+                ColorCode = repeater.ColorCode,
+                Slot = talkgroup.TimeSlot.ToString(),
+                RadioId = _hamCallsign
+            };
+            
+            // Create a scanlist if needed and add this repeater to if marked
+            
+            if (Settings.CreateAnalogScanLists && talkgroup.AddToScanList) {
+                string scanListName = repeaterLocation + " Digital";
+                AnyToneScanList? scanList = ScanLists.FirstOrDefault(x => x.ScanListName == scanListName);
+                if (scanList == null) {
+                    scanList = new AnyToneScanList {
+                        ScanListName = scanListName,
+                        ScanChannelMember = digitalChannel.ChannelName,
+                        ScanChannelMemberTxFrequency = digitalChannel.TransmitFrequency,
+                        ScanChannelMemberRxFrequency = digitalChannel.ReceiveFrequency
+                    };
+                    
+                    ScanLists.Add(scanList);
+                } else {
+                    scanList.ScanChannelMember += $"|{digitalChannel.ChannelName}";
+                    scanList.ScanChannelMemberTxFrequency += $"|{digitalChannel.TransmitFrequency}";
+                    scanList.ScanChannelMemberRxFrequency += $"|{digitalChannel.ReceiveFrequency}";
+                    
+                }
+
+                digitalChannel.ScanList = scanList.ScanListName;
+            }
+            
+            digitalChannels.Add(digitalChannel);
+        }
+        
+        // Create a zone and add the first channel to the zone
+        AnyToneZone digitalZone = new AnyToneZone {
+            ZoneName = $"{channelCallsign} {channelBand} {repeater.SiteName}".Truncate(16),
+            ZoneChannelMember = digitalChannels.First().ChannelName,
+            ZoneChannelMemberRxFrequency = digitalChannels.First().ReceiveFrequency,
+            ZoneChannelMemberTxFrequency = digitalChannels.First().TransmitFrequency,
+            AChannel = digitalChannels.First().ChannelName,
+            AChannelRxFrequency = digitalChannels.First().ReceiveFrequency,
+            AChannelTxFrequency = digitalChannels.First().TransmitFrequency,
+            BChannel = digitalChannels.First().ChannelName,
+            BChannelRxFrequency = digitalChannels.First().ReceiveFrequency,
+            BChannelTxFrequency = digitalChannels.First().TransmitFrequency
+        };
+
+        foreach (var digitalChannel in digitalChannels.Skip(1)) {
+            // Add the remaining channels to the zone
+            digitalZone.ZoneChannelMember += $"|{digitalChannel.ChannelName}";
+            digitalZone.ZoneChannelMemberRxFrequency += $"|{digitalChannel.ReceiveFrequency}";
+            digitalZone.ZoneChannelMemberTxFrequency += $"|{digitalChannel.TransmitFrequency}";
+        }
+        
+        // Add the zone to the Zones List
+        Zones.Add(digitalZone);
+        
+        // Add all created channels to the Channels list
+        Channels = Channels.Concat(digitalChannels).ToList();
+    }
     
-    // TODO: make functional
     private void ParseRepeater(T repeater) {
         // 1. check if the repeater is fm, dmr or both
         // 2. if its dmr, create a zone and add channels (BM/I2/BO) to it
@@ -96,193 +285,11 @@ public class AnyToneD878UVIIPlusParser<T> where T : IRepeater {
 
         // Check if the repeater is FM, DMR or both
         if (repeater.IsFM) {
-            // The repeater is FM; it may also be DMR;
-            // Create channel for the repeater;
-            
-            string channelFmctcssTx = repeater.CtcssTx.Length < 1
-                ? "Off"
-                : repeater.CtcssTx;
-            string channelFmctcssRx = repeater.CtcssRx.Length < 1
-                ? "Off"
-                : repeater.CtcssRx;
-            
-            string channelFmSquelchMode = channelFmctcssRx != "Off" || channelFmctcssTx != "Off" ? "CTCSS/DCS" : "Carrier";
-            
-            AnyToneChannel channelFm = new AnyToneChannel {
-                ChannelName = $"{ channelCallsign } { channelBand }".Truncate(16),
-                ReceiveFrequency = channelRx,
-                TransmitFrequency = channelTx,
-                ChannelType = "A-Analog",
-                CtcssDecode = channelFmctcssTx,
-                CtcssEncode = channelFmctcssRx,
-                SquelchMode = channelFmSquelchMode,
-                AprsReportType = "Analog",
-                CustomCtcss = "251.1",
-                BusyLock = "Off",
-                ColorCode = "1",
-                RadioId = _hamCallsign
-            };
-            
-            Channels.Add(channelFm);
-            
-            string channelZoneName = repeaterLocation + " FM";
-            //zone = Zones.Any(x => x.ChannelName == location + " FM");
-            AnyToneZone? zone = Zones.FirstOrDefault(x => x.ZoneName == channelZoneName);
-
-            if (zone == null) {
-                // Zone for repeater location does not exist yet.
-                // Creating zone and adding current channel.
-
-                zone = new AnyToneZone {
-                    ZoneName = channelZoneName,
-                    ZoneChannelMember = channelFm.ChannelName,
-                    ZoneChannelMemberRxFrequency = channelFm.ReceiveFrequency,
-                    ZoneChannelMemberTxFrequency = channelFm.TransmitFrequency,
-                    AChannel = channelFm.ChannelName,
-                    AChannelRxFrequency = channelFm.ReceiveFrequency,
-                    AChannelTxFrequency = channelFm.TransmitFrequency,
-                    BChannel = channelFm.ChannelName,
-                    BChannelRxFrequency = channelFm.ReceiveFrequency,
-                    BChannelTxFrequency = channelFm.TransmitFrequency
-                };
-                
-                Zones.Add(zone);
-            } else {
-                // Zone for repeater location does exist.
-                // Adding current channel.
-                
-                zone.ZoneChannelMember += $"|{channelFm.ChannelName}";
-                zone.ZoneChannelMemberRxFrequency += $"|{channelFm.ReceiveFrequency}";
-                zone.ZoneChannelMemberTxFrequency += $"|{channelFm.TransmitFrequency}";
-            }
-            
-            // Add the repeater's EchoLink Address to the AddressBook
-            
-            if (repeater.IsEchoLink) {
-                var analogContact = new AnyToneAnalogContact {
-                    Name = channelCallsign,
-                    Number = repeater.EchoLinkId
-                };
-
-                AnalogContacts.Add(analogContact);
-            }
-            
-            // Create a Scan List if necessary and add the repeater to it
-
-            if (Settings.CreateAnalogScanLists) {
-                string scanListName = repeaterLocation + " Analog";
-                AnyToneScanList? scanList = ScanLists.FirstOrDefault(x => x.ScanListName == scanListName);
-                if (scanList == null) {
-                    scanList = new AnyToneScanList {
-                        ScanListName = scanListName,
-                        ScanChannelMember = channelFm.ChannelName,
-                        ScanChannelMemberTxFrequency = channelFm.TransmitFrequency,
-                        ScanChannelMemberRxFrequency = channelFm.ReceiveFrequency
-                    };
-                    
-                    ScanLists.Add(scanList);
-                } else {
-                    scanList.ScanChannelMember += $"|{channelFm.ChannelName}";
-                    scanList.ScanChannelMemberTxFrequency += $"|{channelFm.TransmitFrequency}";
-                    scanList.ScanChannelMemberRxFrequency += $"|{channelFm.ReceiveFrequency}";
-                }
-
-                channelFm.ScanList = scanList.ScanListName;
-            }
+            CreateAnalog(repeater, channelRx, channelTx, channelBand, channelCallsign, repeaterLocation);
         }
 
         if (repeater.IsDmr) {
-            // Channel is DMR
-            // Create a zone for the repeater.
-            // Then, create channels for selected TGs based on the
-            // repeater network
-            string shortCallsign = channelCallsign.Substring(3);
-            DmrNetwork repeaterNetwork = DmrNetwork.Bo;
-            
-            if (repeater.IsBrandmeister && repeater.IsIpsc2) {
-                repeaterNetwork = DmrNetwork.Bo;
-            } else if (!repeater.IsBrandmeister && repeater.IsIpsc2) {
-                repeaterNetwork = DmrNetwork.I2;
-            } else if (repeater.IsBrandmeister && repeater.IsIpsc2) {
-                repeaterNetwork = DmrNetwork.Bm;
-            }
-
-            List<AnyToneChannel> digitalChannels = new();
-
-            foreach (var talkgroup in _talkGroups
-                         .Where(tg => tg.CreateChannel)) {
-                // Create a channel for each talkgroup that is marked for channel creation in talkgroups.csv
-                if (repeaterNetwork != DmrNetwork.Bo && repeaterNetwork != talkgroup.Network) {
-                    // Skip any talkgroup that does not match the network of the repeater;
-                    // Do not skip any talkgroup if the repeater supports both talkgroups;
-                    continue;
-                }
-
-                AnyToneChannel digitalChannel = new AnyToneChannel {
-                    ChannelName = $"{shortCallsign}-{talkgroup.Network}-{talkgroup.Name}".Truncate(16),
-                    ReceiveFrequency = channelRx,
-                    TransmitFrequency = channelTx,
-                    ChannelType = "D-Digital",
-                    Contact = talkgroup.Name,
-                    ContactTg = talkgroup.DmrId.ToString(),
-                    ColorCode = repeater.ColorCode,
-                    Slot = talkgroup.TimeSlot.ToString(),
-                    RadioId = _hamCallsign
-                };
-                
-                // Create a scanlist if needed and add this repeater to if marked
-                
-                if (Settings.CreateAnalogScanLists && talkgroup.AddToScanList) {
-                    string scanListName = repeaterLocation + " Digital";
-                    AnyToneScanList? scanList = ScanLists.FirstOrDefault(x => x.ScanListName == scanListName);
-                    if (scanList == null) {
-                        scanList = new AnyToneScanList {
-                            ScanListName = scanListName,
-                            ScanChannelMember = digitalChannel.ChannelName,
-                            ScanChannelMemberTxFrequency = digitalChannel.TransmitFrequency,
-                            ScanChannelMemberRxFrequency = digitalChannel.ReceiveFrequency
-                        };
-                        
-                        ScanLists.Add(scanList);
-                    } else {
-                        scanList.ScanChannelMember += $"|{digitalChannel.ChannelName}";
-                        scanList.ScanChannelMemberTxFrequency += $"|{digitalChannel.TransmitFrequency}";
-                        scanList.ScanChannelMemberRxFrequency += $"|{digitalChannel.ReceiveFrequency}";
-                        
-                    }
-
-                    digitalChannel.ScanList = scanList.ScanListName;
-                }
-                
-                digitalChannels.Add(digitalChannel);
-            }
-            
-            // Create a zone and add the first channel to the zone
-            AnyToneZone digitalZone = new AnyToneZone {
-                ZoneName = $"{channelCallsign} {channelBand} {repeater.SiteName}".Truncate(16),
-                ZoneChannelMember = digitalChannels.First().ChannelName,
-                ZoneChannelMemberRxFrequency = digitalChannels.First().ReceiveFrequency,
-                ZoneChannelMemberTxFrequency = digitalChannels.First().TransmitFrequency,
-                AChannel = digitalChannels.First().ChannelName,
-                AChannelRxFrequency = digitalChannels.First().ReceiveFrequency,
-                AChannelTxFrequency = digitalChannels.First().TransmitFrequency,
-                BChannel = digitalChannels.First().ChannelName,
-                BChannelRxFrequency = digitalChannels.First().ReceiveFrequency,
-                BChannelTxFrequency = digitalChannels.First().TransmitFrequency
-            };
-
-            foreach (var digitalChannel in digitalChannels.Skip(1)) {
-                // Add the remaining channels to the zone
-                digitalZone.ZoneChannelMember += $"|{digitalChannel.ChannelName}";
-                digitalZone.ZoneChannelMemberRxFrequency += $"|{digitalChannel.ReceiveFrequency}";
-                digitalZone.ZoneChannelMemberTxFrequency += $"|{digitalChannel.TransmitFrequency}";
-            }
-            
-            // Add the zone to the Zones List
-            Zones.Add(digitalZone);
-            
-            // Add all created channels to the Channels list
-            Channels = Channels.Concat(digitalChannels).ToList();
+            CreateDigital(repeater, channelRx, channelTx, channelBand, channelCallsign, repeaterLocation);
         }
         
         // Once it's done, sort the Zones list by name
