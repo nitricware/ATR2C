@@ -24,6 +24,8 @@ public class OevsvRepeaterFileHandler {
             csv.Context.TypeConverterCache.AddConverter<RadioBand>(new CsvBandConverter());
             csv.Context.TypeConverterCache.AddConverter<StationType>(new CsvStationTypeConverter());
             csv.Context.TypeConverterCache.AddConverter<RepeaterStatus>(new CsvRepeaterStatusConverter());
+            csv.Context.TypeConverterCache.RemoveConverter<double>();
+            csv.Context.TypeConverterCache.AddConverter<double>(new OevsvCsvDoubleConverter());
             OevsvRepeaters = csv.GetRecords<OevsvRepeater>().ToList();
         }
     }

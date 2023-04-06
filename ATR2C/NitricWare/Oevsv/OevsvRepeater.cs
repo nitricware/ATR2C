@@ -10,9 +10,9 @@ public class OevsvRepeater : IRepeater {
     [Name("type_of_station")]
     public StationType Type { get; set; }
     [Name("frequency_tx")]
-    public string Tx { get; set; }
+    public double Tx { get; set; }
     [Name("frequency_rx")]
-    public string Rx { get; set; }
+    public double Rx { get; set; }
     [Name("callsign")]
     public string Callsign { get; set; }
     [Name("site_name")]

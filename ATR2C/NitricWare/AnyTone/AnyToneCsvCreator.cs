@@ -1,11 +1,12 @@
 using System.Collections;
 using System.Globalization;
+using ATCSVCreator.NitricWare.CPSObjects;
 using CsvHelper;
 using CsvHelper.Configuration;
 
 namespace ATCSVCreator.NitricWare.AnyTone; 
 
-public class AnyToneCsvCreator {
+public class AnyToneCsvCreator : ICsvCreator {
     public List<AnyToneZone>? Zones;
     public List<AnyToneChannel>? Channels;
     public List<AnyToneTalkGroup>? TalkGroups;
@@ -45,7 +46,7 @@ public class AnyToneCsvCreator {
     }
 
     private void MergeDefaults() {
-        MergeFile("Channel.csv");
+        MergeFile("Channels.csv");
         MergeFile("Zone.csv");
         MergeFile("TalkGroups.csv");
         MergeFile("ScanList.csv");

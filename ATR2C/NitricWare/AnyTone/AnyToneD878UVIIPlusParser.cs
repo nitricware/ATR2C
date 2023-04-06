@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Transactions;
 using ATCSVCreator.NitricWare.CPSObjects;
 using ATCSVCreator.NitricWare.ENUM;
 using ATCSVCreator.NitricWare.Helper;
@@ -90,16 +91,8 @@ public class AnyToneD878UVIIPlusParser<T> where T : IRepeater {
         }
         string repeaterLocation = repeater.Callsign.Substring(0, 3);
 
-        string channelTx = Convert.ToDouble(
-            repeater.Tx,
-            CultureInfo.InvariantCulture)
-            .ToString("0.00000")
-            .Replace(",",".");
-        string channelRx = Convert.ToDouble(
-           repeater.Rx,
-            CultureInfo.InvariantCulture)
-            .ToString("0.00000")
-            .Replace(",",".");
+        string channelTx = repeater.Tx.ToString("0.00000").Replace(",",".");
+        string channelRx = repeater.Rx.ToString("0.00000").Replace(",",".");
 
         // Check if the repeater is FM, DMR or both
         if (repeater.IsFM) {

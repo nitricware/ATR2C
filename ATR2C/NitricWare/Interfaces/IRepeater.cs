@@ -5,8 +5,8 @@ namespace ATCSVCreator.NitricWare.CPSObjects;
 public interface IRepeater {
     public RadioBand Band { get; set; }
     public StationType Type { get; set; }
-    public string Tx { get; set; }
-    public string Rx { get; set; }
+    public double Tx { get; set; }
+    public double Rx { get; set; }
     public string Callsign { get; set; }
     public string SiteName { get; set; }
     public RepeaterStatus Status { get; set; }
