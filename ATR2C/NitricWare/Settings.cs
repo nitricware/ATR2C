@@ -5,4 +5,8 @@ public static class Settings {
     // TODO: implement functionality 
     public static bool CreateDigitalScanLists = true;
     public static bool CreateAnalogScanLists = true;
+    public static List<string> exportTypes = new() {
+        "AnyTone AT-D878UVII Plus",
+        "CHIRP"
+    };
 }

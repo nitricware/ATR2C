@@ -1,8 +1,11 @@
+using System.Net.Mime;
+using System.Runtime.InteropServices;
 using ATCSVCreator.NitricWare.AnyTone;
 using ATCSVCreator.NitricWare.Helper;
 using ATCSVCreator.NitricWare.Oevsv;
 using ATCSVCreator.NitricWare.TalkGroups;
 using Terminal.Gui;
+using static Terminal.Gui.Application;
 
 namespace ATCSVCreator.NitricWare.GUI;
 
@@ -18,11 +21,14 @@ public class MainWindow : Window {
     private readonly TextField _hamCallsignTextField;
     private readonly string _hamCallsign = Path.Combine(Settings.HamCallSign);
     private readonly ComboBox _exportTypeComboBox;
+    private readonly MenuBar _menuBar;
 
     private List<View> _views = new();
     
     public MainWindow() {
-        Title = "ATR2C (CTRL + Q to quit)";
+        // Position the Main Window
+        Height = Application.Top.Frame.Height - 1;
+        Y = 1;
         
         Label hamCallsignLabel = new() {
             Text = "Callsign"
@@ -154,12 +160,7 @@ public class MainWindow : Window {
         
         _views.Add(exportTypeLabel);
 
-        List<string> exportTypes = new List<string>() {
-            "AnyTone AT-D878UVII Plus",
-            "CHIRP"
-        };
-
-        //IListDataSource exportTypesSource = new ListWrapper();
+        List<string> exportTypes = Settings.exportTypes;
 
         _exportTypeComboBox = new ComboBox {
             Width = Dim.Fill(15),
@@ -205,7 +206,7 @@ public class MainWindow : Window {
                 DirectoryPath = Path.GetDirectoryName(parent.Text.ToString())
             };
             
-            Application.Run(openDialog);
+            Run(openDialog);
 
             if (!openDialog.Canceled) {
                 parent.Text = openDialog.FilePath.ToString();
@@ -214,7 +215,7 @@ public class MainWindow : Window {
 
         return btnChoseFile;
     }
-
+    
     private void GenerateFiles()  {
         // TODO: move to ATR2C class?
         if (
