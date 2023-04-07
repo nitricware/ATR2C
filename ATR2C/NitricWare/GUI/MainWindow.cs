@@ -71,7 +71,7 @@ public class MainWindow : Window {
         
         _views.Add(_repeaterPathTextField);
         
-        Button btnSelectRepeaterPath = GenerateFilePickerButton(_repeaterPathTextField, false);
+        Button btnSelectRepeaterPath = GuiElementHelper.GenerateFilePickerButton(_repeaterPathTextField, false);
         
         _views.Add(btnSelectRepeaterPath);
         
@@ -93,7 +93,7 @@ public class MainWindow : Window {
         
         _views.Add(_talkGroupPathTextField);
         
-        Button btnSelectTalkgroupsPath = GenerateFilePickerButton(_talkGroupPathTextField, false);
+        Button btnSelectTalkgroupsPath = GuiElementHelper.GenerateFilePickerButton(_talkGroupPathTextField, false);
         
         _views.Add(btnSelectTalkgroupsPath);
 
@@ -126,7 +126,7 @@ public class MainWindow : Window {
         
         _views.Add(defaultsDirPathExplanationLabel);
         
-        Button btnSelectDefaultsDir = GenerateFilePickerButton(_defaultsDirPathTextField, true);
+        Button btnSelectDefaultsDir = GuiElementHelper.GenerateFilePickerButton(_defaultsDirPathTextField, true);
         
         _views.Add(btnSelectDefaultsDir);
         
@@ -148,7 +148,7 @@ public class MainWindow : Window {
         
         _views.Add(_exportDirPathTextField);
         
-        Button btnSelectExportDir = GenerateFilePickerButton(_exportDirPathTextField, true);
+        Button btnSelectExportDir = GuiElementHelper.GenerateFilePickerButton(_exportDirPathTextField, true);
         
         _views.Add(btnSelectExportDir);
         
@@ -190,32 +190,6 @@ public class MainWindow : Window {
         Add(_views.ToArray());
     }
 
-    private Button GenerateFilePickerButton(TextField parent, bool dirSelect) {
-        Button btnChoseFile = new() {
-            Text = dirSelect ? "Find Dir" : "Find File",
-            Y = Pos.Top(parent),
-            X = Pos.Right(parent) + 1
-        };
-
-        btnChoseFile.Clicked += () => {
-            OpenDialog openDialog = new("Open", dirSelect ? "Select a directory" : "Select a CSV file") {
-                AllowsMultipleSelection = false,
-                AllowedFileTypes = new[] { ".csv" },
-                CanChooseFiles = !dirSelect,
-                CanChooseDirectories = dirSelect,
-                DirectoryPath = Path.GetDirectoryName(parent.Text.ToString())
-            };
-            
-            Run(openDialog);
-
-            if (!openDialog.Canceled) {
-                parent.Text = openDialog.FilePath.ToString();
-            }
-        };
-
-        return btnChoseFile;
-    }
-    
     private void GenerateFiles()  {
         // TODO: move to ATR2C class?
         if (
