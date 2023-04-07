@@ -1,13 +1,14 @@
 using System.Globalization;
 using System.Transactions;
 using ATCSVCreator.NitricWare.CPSObjects;
+using ATCSVCreator.NitricWare.DigitalContactList;
 using ATCSVCreator.NitricWare.ENUM;
 using ATCSVCreator.NitricWare.Helper;
 using ATCSVCreator.NitricWare.TalkGroups;
 
 namespace ATCSVCreator.NitricWare.AnyTone; 
 
-public class AnyToneD878UVIIPlusParser<T> where T : IRepeater {
+public class AnyToneD878UVIIPlusRepeaterParser<T> where T : IRepeater {
     public List<AnyToneAnalogContact> AnalogContacts = new();
     public List<AnyToneZone> Zones = new();
     public List<AnyToneChannel> Channels = new();
@@ -19,7 +20,7 @@ public class AnyToneD878UVIIPlusParser<T> where T : IRepeater {
 
     private string _hamCallsign;
 
-    public AnyToneD878UVIIPlusParser(List<T> repeaterList, List<TalkGroup> talkGroups, string hamCallsign) {
+    public AnyToneD878UVIIPlusRepeaterParser(List<T> repeaterList, List<TalkGroup> talkGroups, string hamCallsign) {
         _repeaterList = repeaterList;
         _talkGroups = talkGroups;
         _hamCallsign = hamCallsign;

@@ -1,15 +1,17 @@
+using ATCSVCreator.NitricWare.AnyTone;
+using ATCSVCreator.NitricWare.DigitalContactList;
 using Terminal.Gui;
 
 namespace ATCSVCreator.NitricWare.GUI; 
 
-public class DigitalContactListWindow : Window{
+public class DigitalContactListWindow : Window {
     public DigitalContactListWindow() {
         X = 5;
         Y = 5;
-        Width = 40;
+        Width = 60;
         Height = 6;
         Title = "Digital Contact List";
-        
+        // TODO: Add export path setting
         List<string> exportTypes = Settings.exportTypes;
         
         ComboBox exportTypeComboBox = new ComboBox {
@@ -32,9 +34,13 @@ public class DigitalContactListWindow : Window{
     }
 
     private void GenerateDigitalContactList() {
-        // TODO implement
-        // fetch radio ID CSV
-        // create exportType digital contact list csv
-        throw new NotImplementedException();
+        RadioIdDigitalContactFileHandler radioIdDigitalContactFileHandler = new RadioIdDigitalContactFileHandler();
+        AnyToneD878UVIIPlusDigitalContactListParser anyToneD878UviiPlusDigitalContactListParser =
+            new AnyToneD878UVIIPlusDigitalContactListParser(radioIdDigitalContactFileHandler.RadioIdDigitalContacts);
+        AnyToneCsvCreator anyToneCsvCreator = new AnyToneCsvCreator() {
+            DigitalContactList = anyToneD878UviiPlusDigitalContactListParser.anyToneDigitalContacts
+        };
+        anyToneCsvCreator.CreateDigitalContactList();
+        MessageBox.Query("Result", $"Digital Contact List created with {anyToneD878UviiPlusDigitalContactListParser.anyToneDigitalContacts.Count} contacts.", "OK");
     }
 }

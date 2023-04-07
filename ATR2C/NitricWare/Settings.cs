@@ -9,4 +9,6 @@ public static class Settings {
         "AnyTone AT-D878UVII Plus",
         "CHIRP"
     };
+
+    public static string radioIdDigitalContactListUrl = "https://radioid.net/static/user.csv";
 }

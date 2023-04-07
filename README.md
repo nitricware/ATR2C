@@ -67,7 +67,7 @@ In the following the required columns for each file are listed.
 
 ## Defaults Files
 
-**Caution:** If there are talkgroups mentioned in `/defaults/Channel.csv`, then those talkgroups must be present in `/input/talkgroups.csv`.
+**Caution:** If there are talkgroups mentioned in `/defaults/Channel.csv`, then those talkgroups must be present in `/input/talkgroups.csv`. The Program creates a talk group name that consists of the rows `{Network}-{Radio ID}-{Name}` (i.e. "I2-9-LOKAL").
 
 Default files are merged with the created files to add custom channels and zones (i.e. channels `ISS Voice` and `ISS APRS` in Zone `ISS`).
 
@@ -76,6 +76,7 @@ Custom Zones that contain generated channels must be created in CPS after import
 ## Remarks
 
 1. bandwidth is always set to 12.5K as that is the predominant analog FM raster in Europe. Also, DMR requires 12.5;
+2. Custom CTCSS is set to fixed values; It's ignored by CPS;
 
 ## Known Issues
 

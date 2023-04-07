@@ -242,7 +242,7 @@ public class MainWindow : Window {
 
         switch (_exportTypeComboBox.Text.ToString()) {
             case "AnyTone AT-D878UVII Plus":
-                var anyToneD878UviiPlusParser = new AnyToneD878UVIIPlusParser<OevsvRepeater>(
+                var anyToneD878UviiPlusParser = new AnyToneD878UVIIPlusRepeaterParser<OevsvRepeater>(
                     oevsvRepeaterFileHandler.OevsvRepeaters,
                     talkGroupFileHandler.TalkGroupList,
                     _hamCallsignTextField.Text.ToString() ?? Settings.HamCallSign);

@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Globalization;
 using ATCSVCreator.NitricWare.CPSObjects;
+using ATCSVCreator.NitricWare.DigitalContactList;
 using CsvHelper;
 using CsvHelper.Configuration;
 
@@ -13,6 +14,8 @@ public class AnyToneCsvCreator : ICsvCreator {
     public List<AnyToneAnalogContact>? AnalogAddressBook;
     public List<AnyToneScanList>? ScanLists;
 
+    public List<AnyToneDigitalContact>? DigitalContactList;
+
     public string? DefaultsDir;
     public string? ExportDir;
     
@@ -21,8 +24,15 @@ public class AnyToneCsvCreator : ICsvCreator {
         ShouldQuote = _ => true
     };
 
+    public void CreateDigitalContactList() {
+        ExportDir ??= Path.Combine(Directory.GetCurrentDirectory(), "export", "AnyTone AT-D878UVII Plus");
+        DefaultsDir ??= Path.Combine(Directory.GetCurrentDirectory(), "defaults", "AnyTone AT-D878UVII Plus");
+        CreateFile("DigitalContactList.csv", DigitalContactList);
+        MergeFile("DigitalContactList.csv");
+    }
+
     public void CreateAllFiles() {
-        ExportDir ??= Path.Combine(Directory.GetCurrentDirectory(), "export");
+        ExportDir ??= Path.Combine(Directory.GetCurrentDirectory(), "export", "AnyTone AT-D878UVII Plus");
         DefaultsDir ??= Path.Combine(Directory.GetCurrentDirectory(), "defaults", "AnyTone AT-D878UVII Plus");
 
         ExportDir = Path.Combine(ExportDir, "AnyTone AT-D878UVII Plus");
