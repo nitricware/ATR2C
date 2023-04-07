@@ -217,32 +217,9 @@ public class AnyToneD878UVIIPlusRepeaterParser<T> where T : IRepeater {
                 CtcssDecode = channelCtcssTx,
                 CtcssEncode = channelCtcssRx,
                 SquelchMode = channelSquelchMode,
+                ScanList = $"{repeaterLocation} Digital"
             };
-            
-            // Create a scanlist if needed and add this repeater to if marked
-            
-            if (Settings.CreateAnalogScanLists && talkgroup.AddToScanList) {
-                string scanListName = repeaterLocation + " Digital";
-                AnyToneScanList? scanList = ScanLists.FirstOrDefault(x => x.ScanListName == scanListName);
-                if (scanList == null) {
-                    scanList = new AnyToneScanList {
-                        ScanListName = scanListName,
-                        ScanChannelMember = digitalChannel.ChannelName,
-                        ScanChannelMemberTxFrequency = digitalChannel.TransmitFrequency,
-                        ScanChannelMemberRxFrequency = digitalChannel.ReceiveFrequency
-                    };
-                    
-                    ScanLists.Add(scanList);
-                } else {
-                    scanList.ScanChannelMember += $"|{digitalChannel.ChannelName}";
-                    scanList.ScanChannelMemberTxFrequency += $"|{digitalChannel.TransmitFrequency}";
-                    scanList.ScanChannelMemberRxFrequency += $"|{digitalChannel.ReceiveFrequency}";
-                    
-                }
 
-                digitalChannel.ScanList = scanList.ScanListName;
-            }
-            
             digitalChannels.Add(digitalChannel);
         }
         
@@ -259,6 +236,26 @@ public class AnyToneD878UVIIPlusRepeaterParser<T> where T : IRepeater {
             BChannelRxFrequency = digitalChannels.First().ReceiveFrequency,
             BChannelTxFrequency = digitalChannels.First().TransmitFrequency
         };
+        
+        // Create a scanlist for the location and add this repeater to the scanlist
+        if (Settings.CreateDigitalScanLists) {
+            string scanListName = repeaterLocation + " Digital";
+            AnyToneScanList? scanList = ScanLists.FirstOrDefault(x => x.ScanListName == scanListName);
+            if (scanList == null) {
+                scanList = new AnyToneScanList {
+                    ScanListName = scanListName,
+                    ScanChannelMember = digitalZone.AChannel,
+                    ScanChannelMemberTxFrequency = digitalZone.AChannelTxFrequency,
+                    ScanChannelMemberRxFrequency = digitalZone.AChannelRxFrequency
+                };
+                    
+                ScanLists.Add(scanList);
+            } else {
+                scanList.ScanChannelMember += $"|{digitalZone.AChannel}";
+                scanList.ScanChannelMemberTxFrequency += $"|{digitalZone.AChannelTxFrequency}";
+                scanList.ScanChannelMemberRxFrequency += $"|{digitalZone.AChannelRxFrequency}";
+            }
+        }
 
         foreach (var digitalChannel in digitalChannels.Skip(1)) {
             // Add the remaining channels to the zone
