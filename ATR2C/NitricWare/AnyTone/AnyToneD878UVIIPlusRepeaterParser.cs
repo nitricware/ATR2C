@@ -39,9 +39,8 @@ public class AnyToneD878UVIIPlusRepeaterParser<T> where T : IRepeater {
     }
 
     private AnyToneTalkGroup TalkGroupToAnyToneTalkGroup(TalkGroup talkGroup) {
-        Console.WriteLine( $"Generate: {talkGroup.Network.ToString()}-{talkGroup.DmrId}-{talkGroup.Name}");
         return new() {
-            Name = $"{talkGroup.Network.ToString()}-{talkGroup.DmrId}-{talkGroup.Name}",
+            Name = $"{talkGroup.Network.ToString()}-{talkGroup.DmrId}-{talkGroup.Name}".ReplaceUmlaut(),
             RadioId = talkGroup.DmrId,
             CallAlert = talkGroup.CallAlert,
             CallType = talkGroup.CallType
@@ -86,7 +85,7 @@ public class AnyToneD878UVIIPlusRepeaterParser<T> where T : IRepeater {
         string channelSquelchMode = channelCtcssRx != "Off" || channelCtcssTx != "Off" ? "CTCSS/DCS" : "Carrier";
         
         AnyToneChannel channelFm = new AnyToneChannel {
-            ChannelName = $"{ channelCallsign } { channelBand }".Truncate(16),
+            ChannelName = $"{ channelCallsign } { channelBand }".ReplaceUmlaut().Truncate(16),
             ReceiveFrequency = channelRx,
             TransmitFrequency = channelTx,
             ChannelType = "A-Analog",
@@ -205,7 +204,7 @@ public class AnyToneD878UVIIPlusRepeaterParser<T> where T : IRepeater {
             }
 
             AnyToneChannel digitalChannel = new AnyToneChannel {
-                ChannelName = $"{shortCallsign}-{talkgroup.Network}-{talkgroup.Name}".Truncate(16),
+                ChannelName = $"{shortCallsign}-{talkgroup.Network}-{talkgroup.Name}".ReplaceUmlaut().Truncate(16),
                 ReceiveFrequency = channelRx,
                 TransmitFrequency = channelTx,
                 ChannelType = "D-Digital",
@@ -225,7 +224,7 @@ public class AnyToneD878UVIIPlusRepeaterParser<T> where T : IRepeater {
         
         // Create a zone and add the first channel to the zone
         AnyToneZone digitalZone = new AnyToneZone {
-            ZoneName = $"{channelCallsign} {repeaterNetwork} {repeater.SiteName}".Truncate(16),
+            ZoneName = $"{channelCallsign} {repeaterNetwork} {repeater.SiteName}".ReplaceUmlaut().Truncate(16),
             ZoneChannelMember = digitalChannels.First().ChannelName,
             ZoneChannelMemberRxFrequency = digitalChannels.First().ReceiveFrequency,
             ZoneChannelMemberTxFrequency = digitalChannels.First().TransmitFrequency,

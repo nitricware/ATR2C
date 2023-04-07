@@ -1,9 +1,11 @@
 using System.Collections;
 using System.Globalization;
+using System.Text;
 using ATCSVCreator.NitricWare.CPSObjects;
 using ATCSVCreator.NitricWare.DigitalContactList;
 using CsvHelper;
 using CsvHelper.Configuration;
+using static System.Text.Encoding;
 
 namespace ATCSVCreator.NitricWare.AnyTone; 
 
@@ -50,7 +52,8 @@ public class AnyToneCsvCreator : ICsvCreator {
 
     private void CreateFile(string filename, IEnumerable data) {
         using var writer = new StreamWriter(
-            Path.Combine(ExportDir, filename));
+            new FileStream(Path.Combine(ExportDir, filename), FileMode.Create, FileAccess.ReadWrite),
+            Encoding.ASCII);
         using var csv = new CsvWriter(writer, _config);
         csv.WriteRecords(data);
     }

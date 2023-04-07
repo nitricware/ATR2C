@@ -1,3 +1,4 @@
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace ATCSVCreator.NitricWare.Helper; 
@@ -7,6 +8,19 @@ public static class NwExtensions {
         if (s.Length > length)
             return s.Substring(0, length);
         return s;
+    }
+
+    public static string ReplaceUmlaut(this string s) {
+        StringBuilder sb = new StringBuilder (s);
+
+        sb.Replace("ä", "ae");
+        sb.Replace("Ä", "Ae");
+        sb.Replace("ö", "oe");
+        sb.Replace("Ö", "Oe");
+        sb.Replace("ü", "üe");
+        sb.Replace("Ü", "Ue");
+
+        return sb.ToString();
     }
     
     /// <summary>
