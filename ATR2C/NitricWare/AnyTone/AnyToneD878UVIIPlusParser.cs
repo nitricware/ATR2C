@@ -38,8 +38,9 @@ public class AnyToneD878UVIIPlusParser<T> where T : IRepeater {
     }
 
     private AnyToneTalkGroup TalkGroupToAnyToneTalkGroup(TalkGroup talkGroup) {
+        Console.WriteLine( $"Generate: {talkGroup.Network.ToString()}-{talkGroup.DmrId}-{talkGroup.Name}");
         return new() {
-            Name = talkGroup.Name,
+            Name = $"{talkGroup.Network.ToString()}-{talkGroup.DmrId}-{talkGroup.Name}",
             RadioId = talkGroup.DmrId,
             CallAlert = talkGroup.CallAlert,
             CallType = talkGroup.CallType
@@ -74,23 +75,23 @@ public class AnyToneD878UVIIPlusParser<T> where T : IRepeater {
         // The repeater is FM; it may also be DMR;
         // Create channel for the repeater;
         
-        string channelFmctcssTx = repeater.CtcssTx.Length < 1
+        string channelCtcssTx = repeater.CtcssTx.Length < 1
             ? "Off"
             : repeater.CtcssTx;
-        string channelFmctcssRx = repeater.CtcssRx.Length < 1
+        string channelCtcssRx = repeater.CtcssRx.Length < 1
             ? "Off"
             : repeater.CtcssRx;
         
-        string channelFmSquelchMode = channelFmctcssRx != "Off" || channelFmctcssTx != "Off" ? "CTCSS/DCS" : "Carrier";
+        string channelSquelchMode = channelCtcssRx != "Off" || channelCtcssTx != "Off" ? "CTCSS/DCS" : "Carrier";
         
         AnyToneChannel channelFm = new AnyToneChannel {
             ChannelName = $"{ channelCallsign } { channelBand }".Truncate(16),
             ReceiveFrequency = channelRx,
             TransmitFrequency = channelTx,
             ChannelType = "A-Analog",
-            CtcssDecode = channelFmctcssTx,
-            CtcssEncode = channelFmctcssRx,
-            SquelchMode = channelFmSquelchMode,
+            CtcssDecode = channelCtcssTx,
+            CtcssEncode = channelCtcssRx,
+            SquelchMode = channelSquelchMode,
             AprsReportType = "Analog",
             CustomCtcss = "251.1",
             BusyLock = "Off",
@@ -171,8 +172,17 @@ public class AnyToneD878UVIIPlusParser<T> where T : IRepeater {
         // Create a zone for the repeater.
         // Then, create channels for selected TGs based on the
         // repeater network
-        string shortCallsign = channelCallsign.Substring(3);
+        string shortCallsign = channelCallsign.Substring(2);
         DmrNetwork repeaterNetwork = DmrNetwork.Bo;
+        
+        string channelCtcssTx = repeater.CtcssTx.Length < 1
+            ? "Off"
+            : repeater.CtcssTx;
+        string channelCtcssRx = repeater.CtcssRx.Length < 1
+            ? "Off"
+            : repeater.CtcssRx;
+        
+        string channelSquelchMode = channelCtcssRx != "Off" || channelCtcssTx != "Off" ? "CTCSS/DCS" : "Carrier";
         
         if (repeater.IsBrandmeister && repeater.IsIpsc2) {
             repeaterNetwork = DmrNetwork.Bo;
@@ -198,11 +208,14 @@ public class AnyToneD878UVIIPlusParser<T> where T : IRepeater {
                 ReceiveFrequency = channelRx,
                 TransmitFrequency = channelTx,
                 ChannelType = "D-Digital",
-                Contact = talkgroup.Name,
+                Contact = $"{talkgroup.Network.ToString()}-{talkgroup.DmrId}-{talkgroup.Name}",
                 ContactTg = talkgroup.DmrId.ToString(),
                 ColorCode = repeater.ColorCode,
                 Slot = talkgroup.TimeSlot.ToString(),
-                RadioId = _hamCallsign
+                RadioId = _hamCallsign,
+                CtcssDecode = channelCtcssTx,
+                CtcssEncode = channelCtcssRx,
+                SquelchMode = channelSquelchMode,
             };
             
             // Create a scanlist if needed and add this repeater to if marked
@@ -234,7 +247,7 @@ public class AnyToneD878UVIIPlusParser<T> where T : IRepeater {
         
         // Create a zone and add the first channel to the zone
         AnyToneZone digitalZone = new AnyToneZone {
-            ZoneName = $"{channelCallsign} {channelBand} {repeater.SiteName}".Truncate(16),
+            ZoneName = $"{channelCallsign} {repeaterNetwork} {repeater.SiteName}".Truncate(16),
             ZoneChannelMember = digitalChannels.First().ChannelName,
             ZoneChannelMemberRxFrequency = digitalChannels.First().ReceiveFrequency,
             ZoneChannelMemberTxFrequency = digitalChannels.First().TransmitFrequency,
