@@ -9,9 +9,19 @@ public class OevsvRepeater : IRepeater {
     public RadioBand Band { get; set; }
     [Name("type_of_station")]
     public StationType Type { get; set; }
-    [Name("frequency_tx")]
-    public double Tx { get; set; }
+    /*
+     * The ÖVSV repeater list reverses Tx and Rx
+     * because it's from the repeater's POV.
+     *
+     * This reversal is contrary to i.e. AnyTone
+     * CPS POV.
+     *
+     * Therefore, the Rx column is saved to the Tx
+     * property of the class and vice versa.
+     */
     [Name("frequency_rx")]
+    public double Tx { get; set; }
+    [Name("frequency_tx")]
     public double Rx { get; set; }
     [Name("callsign")]
     public string Callsign { get; set; }
