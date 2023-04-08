@@ -55,9 +55,11 @@ public class AnyToneCsvCreator : ICsvCreator {
     }
 
     private void CreateFile(string filename, IEnumerable data) {
+        // AnyTone CPS requires Encoding 1252 to display Umlaut
+        System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
         using var writer = new StreamWriter(
             new FileStream(Path.Combine(ExportDir, filename), FileMode.Create, FileAccess.ReadWrite),
-            Encoding.ASCII);
+            Encoding.GetEncoding(1252));
         using var csv = new CsvWriter(writer, _config);
         csv.WriteRecords(data);
     }

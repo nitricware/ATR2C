@@ -11,7 +11,7 @@ public class AnyToneD878UVIIPlusDigitalContactListParser {
             anyToneDigitalContacts.Add(new AnyToneDigitalContact {
                 DmrId = digitalContact.DmrId,
                 Callsign = digitalContact.Callsign,
-                Name = $"{digitalContact.FirstName} {digitalContact.LastName}".ReplaceUmlaut().Truncate(16),
+                Name = $"{digitalContact.FirstName} {digitalContact.LastName}".Truncate(16),
                 City = digitalContact.City,
                 State = digitalContact.State,
                 Country = digitalContact.Country
