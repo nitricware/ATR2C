@@ -188,8 +188,11 @@ public class AnyToneD878UVIIPlusRepeaterParser<T> where T : IRepeater {
             repeaterNetwork = DmrNetwork.Bo;
         } else if (!repeater.IsBrandmeister && repeater.IsIpsc2) {
             repeaterNetwork = DmrNetwork.I2;
-        } else if (repeater.IsBrandmeister && repeater.IsIpsc2) {
+        } else if (repeater.IsBrandmeister && !repeater.IsIpsc2) {
             repeaterNetwork = DmrNetwork.Bm;
+        }
+        else {
+            repeaterNetwork = DmrNetwork.Bo;
         }
 
         List<AnyToneChannel> digitalChannels = new();
