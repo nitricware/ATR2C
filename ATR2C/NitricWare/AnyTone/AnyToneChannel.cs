@@ -15,7 +15,7 @@ public class AnyToneChannel {
     public string ChannelType { get; set; }
     [Name("Transmit Power")]
     public string TransmitPower { get; set; } = "Mid";
-    [Name("Bandwith")]
+    [Name("Band Width")]
     public string BandWidth { get; set; } = "12.5K";
     [Name("CTCSS/DCS Decode")]
     public string CtcssDecode { get; set; } = "Off";
