@@ -7,7 +7,7 @@ public static class Settings {
     public static bool CreateAnalogScanLists = true;
     public static List<string> exportTypes = new() {
         "AnyTone AT-D878UVII Plus",
-        "CHIRP"
+        //"CHIRP"
     };
 
     public static string radioIdDigitalContactListUrl = "https://radioid.net/static/user.csv";
