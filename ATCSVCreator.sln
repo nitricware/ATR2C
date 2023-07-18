@@ -12,5 +12,6 @@ Global
 		{F55B6F1D-5096-480E-A09F-B505D20048EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F55B6F1D-5096-480E-A09F-B505D20048EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F55B6F1D-5096-480E-A09F-B505D20048EF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F55B6F1D-5096-480E-A09F-B505D20048EF}.Release|Any CPU.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

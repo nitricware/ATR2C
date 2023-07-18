@@ -33,6 +33,8 @@ public class AnyToneCsvCreator : ICsvCreator {
         ExportDir = Path.Combine(ExportDir, "AnyTone AT-D878UVII Plus");
         DefaultsDir = Path.Combine(DefaultsDir, "AnyTone AT-D878UVII Plus");
         
+        Directory.CreateDirectory(ExportDir);
+        
         CreateFile("DigitalContactList.csv", DigitalContactList);
         MergeFile("DigitalContactList.csv");
     }
