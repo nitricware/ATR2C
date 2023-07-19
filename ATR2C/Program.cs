@@ -14,7 +14,13 @@ MenuBar menuBar = new(
     }
 );
 
+var mainWindow = new MainWindow();
+
+bool errorHandler(Exception e) {
+    return false;
+}
+
 Application.Top.Add(menuBar);
-Application.Top.Add(new MainWindow());
-Application.Run();
+Application.Top.Add(mainWindow);
+Application.Run(errorHandler);
 Application.Shutdown();
