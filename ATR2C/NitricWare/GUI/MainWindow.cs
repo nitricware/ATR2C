@@ -22,6 +22,8 @@ public class MainWindow : Window {
     private readonly string _hamCallsign = Path.Combine(Settings.HamCallSign);
     private readonly ComboBox _exportTypeComboBox;
     private readonly MenuBar _menuBar;
+    
+    private readonly Button btnGenerate;
 
     private List<View> _views = new();
     
@@ -174,7 +176,7 @@ public class MainWindow : Window {
         
         _views.Add(_exportTypeComboBox);
 
-        Button btnGenerate = new () {
+        btnGenerate = new () {
             Text = "Generate CSV Files",
             Y = Pos.Top(_views.Last()) +2 ,
             // center the login button horizontally
@@ -190,27 +192,44 @@ public class MainWindow : Window {
         Add(_views.ToArray());
     }
 
-    private void GenerateFiles()  {
+    private void GenerateFiles() {
+        btnGenerate.Visible = false;
         // TODO: move to ATR2C class?
         if (
             !File.Exists(_repeaterPathTextField.Text.ToString()) || 
             !File.Exists(_talkGroupPathTextField.Text.ToString())
         ) {
             MessageBox.ErrorQuery("Error", "One of the specified files was not found.", "OK");
+            btnGenerate.Visible = true;
+            return;
+        }
+
+        TalkGroupFileHandler talkGroupFileHandler;
+        OevsvRepeaterFileHandler oevsvRepeaterFileHandler;
+        try {
+            talkGroupFileHandler = new TalkGroupFileHandler(_talkGroupPathTextField.Text.ToString());
+        } catch (CsvHelper.HeaderValidationException e) {
+            MessageBox.ErrorQuery("Error", $"Unexpected or missing column names in talkgroups input file.", "OK");
+            btnGenerate.Visible = true;
             return;
         }
         
-        OevsvRepeaterFileHandler oevsvRepeaterFileHandler;
-        TalkGroupFileHandler talkGroupFileHandler = new TalkGroupFileHandler(_talkGroupPathTextField.Text.ToString());
         
         // Create export director if it does not exist yet.
         string exportPath = Path.Combine(Directory.GetCurrentDirectory(), "export");
         Directory.CreateDirectory(exportPath);
-        
+
         try {
             oevsvRepeaterFileHandler = new OevsvRepeaterFileHandler(_repeaterPathTextField.Text.ToString());
-        } catch (NullReferenceException e) {
-            MessageBox.ErrorQuery("Error", $"There was an error reading the repeater.csv file: {e.Message}", "OK");
+        }
+        catch (NullReferenceException e) {
+            MessageBox.ErrorQuery("Error", $"There was an error reading the repeater input file: {e.Message}", "OK");
+            btnGenerate.Visible = true;
+            return;
+        }
+        catch (CsvHelper.HeaderValidationException e) {
+            MessageBox.ErrorQuery("Error", $"Unexpected or missing column names in repeater input file.", "OK");
+            btnGenerate.Visible = true;
             return;
         }
 
@@ -241,7 +260,7 @@ public class MainWindow : Window {
                 MessageBox.ErrorQuery("Error", $"Unknown Export Type", "OK");
                 break;
         }
-
         MessageBox.Query("Success", "The CSV files were created successfully", "OK");
+        btnGenerate.Visible = true;
     }
 }

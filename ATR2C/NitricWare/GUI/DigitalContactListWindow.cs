@@ -83,7 +83,13 @@ public class DigitalContactListWindow : Window {
     }
 
     private void GenerateDigitalContactList() {
-        RadioIdDigitalContactFileHandler radioIdDigitalContactFileHandler = new RadioIdDigitalContactFileHandler();
+        RadioIdDigitalContactFileHandler radioIdDigitalContactFileHandler;
+        try {
+            radioIdDigitalContactFileHandler = new RadioIdDigitalContactFileHandler();
+        } catch (Exception e) {
+            MessageBox.ErrorQuery("Error", $"Error fetching current Radio ID database.", "OK");
+            return;
+        }
         AnyToneD878UVIIPlusDigitalContactListParser anyToneD878UviiPlusDigitalContactListParser =
             new AnyToneD878UVIIPlusDigitalContactListParser(radioIdDigitalContactFileHandler.RadioIdDigitalContacts);
         AnyToneCsvCreator anyToneCsvCreator = new AnyToneCsvCreator() {
