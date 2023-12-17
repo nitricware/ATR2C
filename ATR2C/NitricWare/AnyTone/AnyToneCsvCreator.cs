@@ -62,7 +62,8 @@ public class AnyToneCsvCreator : ICsvCreator {
         using var writer = new StreamWriter(
             new FileStream(Path.Combine(ExportDir, filename), FileMode.Create, FileAccess.ReadWrite),
             Encoding.GetEncoding(1252));
-            //Encoding.GetEncoding("GB2312"));
+            //Encoding.GetEncoding("gb2312"));
+            //Encoding.GetEncoding("gbk"));
         using var csv = new CsvWriter(writer, _config);
         csv.WriteRecords(data);
     }

@@ -7,6 +7,7 @@ public static class Settings {
     public static bool CreateAnalogScanLists = true;
     public static List<string> exportTypes = new() {
         "AnyTone AT-D878UVII Plus",
+        "Generic 5 Character"
         //"CHIRP"
     };
 

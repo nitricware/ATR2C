@@ -1,6 +1,7 @@
 using System.Net.Mime;
 using System.Runtime.InteropServices;
 using ATCSVCreator.NitricWare.AnyTone;
+using ATCSVCreator.NitricWare.Generic_5_Character;
 using ATCSVCreator.NitricWare.Helper;
 using ATCSVCreator.NitricWare.Oevsv;
 using ATCSVCreator.NitricWare.TalkGroups;
@@ -255,6 +256,19 @@ public class MainWindow : Window {
                 break;
             case "CHIRP":
                 
+                break;
+            case "Generic 5 Character":
+                var generic5CharacaterParser = new Generic5CharacterRepeaterParser<OevsvRepeater>(
+                    oevsvRepeaterFileHandler.OevsvRepeaters);
+
+                // Arm the CSVCreator with all created objects
+                Generic5CharacterCsvCreator generic5CharacterCreator = new Generic5CharacterCsvCreator {
+                    ListItems = generic5CharacaterParser.ListItems,
+                    DefaultsDir = _defaultsDirPathTextField.Text.ToString(),
+                    ExportDir = _exportDirPathTextField.Text.ToString() 
+                };
+
+                generic5CharacterCreator.CreateAllFiles();
                 break;
             default:
                 MessageBox.ErrorQuery("Error", $"Unknown Export Type", "OK");

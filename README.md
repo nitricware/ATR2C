@@ -19,3 +19,7 @@ Please refer to the [wiki](https://github.com/nitricware/ATR2C/wiki) for more in
 1. bandwidth is always set to 12.5K as that is the predominant analog FM raster in Europe. Also, DMR requires 12.5;
 2. Custom CTCSS is set to fixed values; It's ignored by CPS;
 3. Scan List improvement: with promiscuous mode on, the digital scan lists could be improved
+
+## Contributors
+
+- OE2LRO
