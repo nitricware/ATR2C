@@ -70,19 +70,29 @@ public class AnyToneD878UVIIPlusRepeaterParser<T> where T : IRepeater {
 
         return false;
     }
+    
+    private static string FormatCtcss(string tone) {
+        if (string.IsNullOrWhiteSpace(tone)) {
+            return "Off";
+        }
+
+        string normalized = tone.Trim().Replace(",", ".");
+
+        return decimal.TryParse(normalized, NumberStyles.Float, CultureInfo.InvariantCulture, out decimal value)
+            ? value.ToString("0.0", CultureInfo.InvariantCulture)
+            : normalized;
+    }
 
     private void CreateAnalog(T repeater, string channelRx, string channelTx, string channelBand, string channelCallsign, string repeaterLocation) {
         // The repeater is FM; it may also be DMR;
         // Create channel for the repeater;
-        
-        string channelCtcssTx = repeater.CtcssTx.Length < 1
-            ? "Off"
-            : repeater.CtcssTx;
-        string channelCtcssRx = repeater.CtcssRx.Length < 1
-            ? "Off"
-            : repeater.CtcssRx;
+
+        string channelCtcssTx = FormatCtcss(repeater.CtcssTx);
+        string channelCtcssRx = FormatCtcss(repeater.CtcssRx);
         
         string channelSquelchMode = channelCtcssRx != "Off" || channelCtcssTx != "Off" ? "CTCSS/DCS" : "Carrier";
+        
+        TalkGroup? defaultAnalogContact = _talkGroups.FirstOrDefault(x => x.AddToList);
         
         AnyToneChannel channelFm = new AnyToneChannel {
             ChannelName = $"{ channelCallsign } { channelBand }".RemoveDiacritics().Truncate(16),
@@ -96,7 +106,12 @@ public class AnyToneD878UVIIPlusRepeaterParser<T> where T : IRepeater {
             CustomCtcss = "251.1",
             BusyLock = "Off",
             ColorCode = "1",
-            RadioId = _hamCallsign
+            RadioId = _hamCallsign,
+            TxCc = "1",
+            Contact = defaultAnalogContact != null
+                ? $"{defaultAnalogContact.Network}-{defaultAnalogContact.DmrId}-{defaultAnalogContact.Name}"
+                : "",
+            ContactTg = defaultAnalogContact?.DmrId.ToString() ?? "1",
         };
         
         Channels.Add(channelFm);
@@ -174,13 +189,9 @@ public class AnyToneD878UVIIPlusRepeaterParser<T> where T : IRepeater {
         // repeater network
         string shortCallsign = channelCallsign.Substring(2);
         DmrNetwork repeaterNetwork = DmrNetwork.Bo;
-        
-        string channelCtcssTx = repeater.CtcssTx.Length < 1
-            ? "Off"
-            : repeater.CtcssTx;
-        string channelCtcssRx = repeater.CtcssRx.Length < 1
-            ? "Off"
-            : repeater.CtcssRx;
+
+        string channelCtcssTx = FormatCtcss(repeater.CtcssTx);
+        string channelCtcssRx = FormatCtcss(repeater.CtcssRx);
         
         string channelSquelchMode = channelCtcssRx != "Off" || channelCtcssTx != "Off" ? "CTCSS/DCS" : "Carrier";
         
@@ -213,7 +224,8 @@ public class AnyToneD878UVIIPlusRepeaterParser<T> where T : IRepeater {
                 ChannelType = "D-Digital",
                 Contact = $"{talkgroup.Network.ToString()}-{talkgroup.DmrId}-{talkgroup.Name}",
                 ContactTg = talkgroup.DmrId.ToString(),
-                ColorCode = repeater.ColorCode,
+                ColorCode = repeater.ColorCode.Trim(),
+                TxCc =  repeater.ColorCode.Trim(),
                 Slot = talkgroup.TimeSlot.ToString(),
                 RadioId = _hamCallsign,
                 CtcssDecode = channelCtcssTx,
@@ -301,7 +313,9 @@ public class AnyToneD878UVIIPlusRepeaterParser<T> where T : IRepeater {
             CreateAnalog(repeater, channelRx, channelTx, channelBand, channelCallsign, repeaterLocation);
         }
 
-        if (repeater.IsDmr) {
+        if (repeater.IsDmr
+            && int.TryParse(repeater.ColorCode?.Trim(), out int colorCode)
+            && colorCode is >= 0 and <= 15) {
             CreateDigital(repeater, channelRx, channelTx, channelBand, channelCallsign, repeaterLocation);
         }
         

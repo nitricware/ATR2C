@@ -25,7 +25,7 @@ public class AnyToneChannel {
     [Name("Contact Call Type")]
     public string ContactCallType { get; set; } = "Group Call";
     [Name("Contact TG/DMR ID")]
-    public string ContactTg { get; set; }
+    public string ContactTg { get; set; } = "1";
     [Name("Radio ID")]
     public string RadioId { get; set; }
     [Name("Busy Lock/TX Permit")]
@@ -42,9 +42,9 @@ public class AnyToneChannel {
     public string ToneId5 { get; set; } = "1";
     [Name("PTT ID")]
     public string Pttid { get; set; } = "Off";
-    [Name("Color Code")]
+    [Name("RX Color Code")]
     public string ColorCode { get; set; }
-    public string Slot { get; set; }
+    public string Slot { get; set; } = "1";
     [Name("Scan List")]
     public string ScanList { get; set; } = "None";
     [Name("Receive Group List")]
@@ -95,7 +95,7 @@ public class AnyToneChannel {
     public string DataAckDisable { get; set; } = "0";
     [Name("R5toneBot")]
     public string R5ToneBot { get; set; } = "0";
-    [Name("R5toneEot")]
+    [Name("R5ToneEot")]
     public string R5ToneEot { get; set; } = "0";
     [Name("Auto Scan")]
     public string AutoScan { get; set; } = "0";
@@ -105,4 +105,10 @@ public class AnyToneChannel {
     public string SendTalkerAlias { get; set; } = "0";
     [Name("AnaAprsTxPath")]
     public string AnaAprstxPath { get; set; } = "0";
+    [Name("ARC4")]
+    public string Arc4 { get; set; } = "0";
+    [Name("ex_emg_kind")]
+    public string ExEmgKind { get; set; } = "0";
+    [Name("TxCC")]
+    public string TxCc { get; set; }
 }

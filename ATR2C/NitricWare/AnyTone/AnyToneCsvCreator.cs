@@ -48,10 +48,10 @@ public class AnyToneCsvCreator : ICsvCreator {
         Directory.CreateDirectory(ExportDir);
         
         CreateFile("Zone.csv", Zones);
-        CreateFile("Channels.csv", Channels);
+        CreateFile("Channel.csv", Channels);
         CreateFile("AnalogAddressBook.csv", AnalogAddressBook);
-        CreateFile("Talkgroups.csv", TalkGroups);
-        CreateFile("Scanlist.csv", ScanLists);
+        CreateFile("TalkGroups.csv", TalkGroups);
+        CreateFile("ScanList.csv", ScanLists);
 
         MergeDefaults();
     }
@@ -69,7 +69,7 @@ public class AnyToneCsvCreator : ICsvCreator {
     }
 
     private void MergeDefaults() {
-        MergeFile("Channels.csv");
+        MergeFile("Channel.csv");
         MergeFile("Zone.csv");
         MergeFile("TalkGroups.csv");
         MergeFile("ScanList.csv");
